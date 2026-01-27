@@ -58,6 +58,24 @@ const Header = () => {
                 </div>
             </header>
 
+            {/* Live Delivery Status */}
+            <div
+                onClick={() => navigate("/track-order")}
+                className=" fixed top-16 left-0 w-full z-40 bg-amber-50 border-b border-amber-200 cursor-pointer hover:bg-amber-100 animate-pulse">
+                <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-amber-700 font-medium">
+                        🚁 Delivering in
+                        <span className="font-semibold">12 mins</span>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-gray-600">
+                        <span>📍 3.4 km away</span>
+                        <span>📦 Order #DRN123</span>
+                    </div>
+
+                </div>
+            </div>
+
 
             {open && (
                 <div className="fixed inset-0 z-50">
@@ -131,7 +149,7 @@ const Header = () => {
                 </div>
             )}
 
-            <div className="h-16" />
+            <div className="h-28" />
         </>
     );
 };
