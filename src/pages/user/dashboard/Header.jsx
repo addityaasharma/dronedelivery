@@ -61,16 +61,23 @@ const Header = () => {
             {/* Live Delivery Status */}
             <div
                 onClick={() => navigate("/track-order")}
-                className=" fixed top-16 left-0 w-full z-40 bg-amber-50 border-b border-amber-200 cursor-pointer hover:bg-amber-100 animate-pulse">
-                <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-sm">
+                className="fixed top-16 left-0 w-full z-40 bg-amber-50 border-b border-amber-200 cursor-pointer hover:bg-amber-100 animate-pulse"
+            >
+                <div className="
+    max-w-7xl mx-auto px-3 py-2
+    flex flex-col gap-1
+    sm:flex-row sm:items-center sm:justify-between
+    text-xs sm:text-sm
+  ">
+
                     <div className="flex items-center gap-2 text-amber-700 font-medium">
                         🚁 Delivering in
                         <span className="font-semibold">12 mins</span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-gray-600">
+                    <div className="flex items-center gap-3 text-gray-600">
                         <span>📍 3.4 km away</span>
-                        <span>📦 Order #DRN123</span>
+                        <span className="hidden sm:inline">📦 Order #DRN123</span>
                     </div>
 
                 </div>
@@ -99,11 +106,8 @@ const Header = () => {
                             <FiMapPin size={18} />
                             Track Order
                         </button>
-
                         <hr className="my-4" />
-
                         <h3 className="text-gray-500 text-sm mb-3">Categories</h3>
-
                         <ul className="space-y-3">
                             <li
                                 onClick={() => goTo("/category/general")}
