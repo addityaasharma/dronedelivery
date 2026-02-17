@@ -12,7 +12,7 @@ import CartPage from "./pages/user/product/CartPage";
 import CheckoutPage from "./pages/user/product/CheckoutPage";
 import CollectionPage from "./pages/user/dashboard/CollectionPage";
 import MainLayout from "./layers/MainLayout";
-import OrderPage from "./pages/user/product/Orderpage";
+import OrderPage from "./pages/user/product/OrderPage";
 
 const App = () => {
   return (
