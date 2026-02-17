@@ -8,7 +8,7 @@ import {
     FiUser
 } from "react-icons/fi";
 import { GiMedicines } from "react-icons/gi";
-import { FiHeart, FiShoppingCart } from "react-icons/fi";
+import { FiHeart, FiShoppingCart, FiHome } from "react-icons/fi";
 
 const Header = () => {
     const [open, setOpen] = useState(false);
@@ -68,7 +68,6 @@ const Header = () => {
 
     return (
         <>
-            {/* HEADER */}
             <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/60">
                 <div className="flex items-center justify-between px-4 py-3">
 
@@ -90,8 +89,6 @@ const Header = () => {
                     </div>
 
                     <div className="flex items-center gap-1">
-
-                        {/* CART */}
                         <button
                             onClick={() => navigate("/cart")}
                             className="p-2 rounded-full hover:bg-gray-100"
@@ -99,7 +96,6 @@ const Header = () => {
                             <FiShoppingCart size={22} />
                         </button>
 
-                        {/* LIKED */}
                         <button
                             onClick={() => navigate("/liked-products")}
                             className="p-2 rounded-full hover:bg-gray-100"
@@ -107,7 +103,6 @@ const Header = () => {
                             <FiHeart size={22} />
                         </button>
 
-                        {/* PROFILE */}
                         <button
                             onClick={() => navigate("/profile")}
                             className="p-2 rounded-full hover:bg-gray-100"
@@ -118,24 +113,6 @@ const Header = () => {
                 </div>
             </header>
 
-            {/* DELIVERY STATUS */}
-            <div
-                onClick={() => navigate("/track-order")}
-                className="fixed top-16 left-0 w-full z-40 bg-amber-50 border-b border-amber-200 cursor-pointer hover:bg-amber-100 animate-pulse"
-            >
-                <div className="max-w-7xl mx-auto px-3 py-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm">
-                    <div className="flex items-center gap-2 text-amber-700 font-medium">
-                        🚁 Delivering in <span className="font-semibold">12 mins</span>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <span>📍 3.4 km away</span>
-                        <span className="hidden sm:inline">📦 Order #DRN123</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* SIDEBAR */}
             {open && (
                 <div className="fixed inset-0 z-50">
                     <div
@@ -150,6 +127,14 @@ const Header = () => {
                                 <FiX size={22} />
                             </button>
                         </div>
+
+                        <button
+                            onClick={() => goTo("/")}
+                            className="w-full flex items-center gap-3 py-2 font-medium hover:text-amber-600"
+                        >
+                            <FiHome size={18} />
+                            Home
+                        </button>
 
                         <button
                             onClick={() => goTo("/track-order")}
@@ -196,8 +181,6 @@ const Header = () => {
                     </aside>
                 </div>
             )}
-
-            <div className="h-28" />
         </>
     );
 };
