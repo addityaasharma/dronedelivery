@@ -164,23 +164,32 @@ const Dashboard = () => {
         load();
     }, []);
 
-    /* ── Fetch products ── */
+    /* ── Fetch products (ALWAYS FRESH) ── */
     useEffect(() => {
         const load = async () => {
+            setLoadingProducts(true);
+
             try {
-                const cached = sessionStorage.getItem("home_products");
-                if (cached) { setProducts(JSON.parse(cached)); return; }
-                const res = await fetch("https://no-wheels-1.onrender.com/user/product?limit=12", {
-                    credentials: "include",
-                });
+                const res = await fetch(
+                    "https://no-wheels-1.onrender.com/user/product?limit=12",
+                    {
+                        credentials: "include",
+                        cache: "no-store" // ← force fresh response
+                    }
+                );
+
                 const data = await res.json();
                 const feed = data.data || data.products || data || [];
+
                 setProducts(feed);
-                sessionStorage.setItem("home_products", JSON.stringify(feed));
-            } catch {
-                console.log("Failed to load products");
-            } finally { setLoadingProducts(false); }
+
+            } catch (err) {
+                console.log("Failed to load products", err);
+            } finally {
+                setLoadingProducts(false);
+            }
         };
+
         load();
     }, []);
 
