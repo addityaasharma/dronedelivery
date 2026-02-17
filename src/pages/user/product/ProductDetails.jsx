@@ -63,7 +63,8 @@ const ProductDetails = () => {
                 if (res.ok) {
                     productData = data.data;
                     setProduct(productData);
-                    setLiked(productData.is_liked || false);
+                    setLiked(Boolean(productData.is_liked));
+                    setIsInCart(Boolean(productData.added_to_cart));
                 }
 
                 const sugRes = await fetch(
@@ -77,26 +78,13 @@ const ProductDetails = () => {
                     setSuggested(suggestedData);
                 }
 
-                // Check if product is in cart
-                const cartRes = await fetch(
-                    "https://no-wheels-1.onrender.com/user/cart",
-                    { credentials: "include" }
-                );
-
-                const cartData = await cartRes.json();
-
-                if (cartRes.ok && cartData.data) {
-                    inCart = cartData.data.some(item => item.product_id === product_id);
-                    setIsInCart(inCart);
-                }
-
                 sessionStorage.setItem(
                     cacheKey,
                     JSON.stringify({
                         product: productData,
                         suggested: suggestedData,
                         liked: productData?.is_liked || false,
-                        isInCart: inCart,
+                        isInCart: productData?.added_to_cart || false,
                     })
                 );
 
