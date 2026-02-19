@@ -11,8 +11,51 @@ import {
     ChevronLeft,
     ChevronRight,
     Check,
-    MapPin
+    MapPin,
+    X,
+    LogIn
 } from "lucide-react";
+
+const LoginPopup = ({ onClose, onLogin }) => (
+    <div
+        className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)" }}
+    >
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative">
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+                <X size={18} className="text-gray-500" />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+                <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                    <LogIn size={26} className="text-amber-500" />
+                </div>
+
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Please Login</h2>
+                <p className="text-sm text-gray-500 mb-6">
+                    You need to be logged in to continue. It only takes a moment!
+                </p>
+
+                <button
+                    onClick={onLogin}
+                    className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 rounded-full transition-colors shadow-sm mb-3"
+                >
+                    Go to Login
+                </button>
+
+                <button
+                    onClick={onClose}
+                    className="w-full text-sm text-gray-500 hover:text-gray-700 py-2 transition-colors"
+                >
+                    Continue Browsing
+                </button>
+            </div>
+        </div>
+    </div>
+);
 
 const ProductDetails = () => {
     const { product_id } = useParams();
@@ -30,6 +73,7 @@ const ProductDetails = () => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [isInCart, setIsInCart] = useState(false);
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -51,7 +95,6 @@ const ProductDetails = () => {
             try {
                 let productData = null;
                 let suggestedData = [];
-                let inCart = false;
 
                 const res = await fetch(
                     `https://no-wheels-1.onrender.com/user/product/${product_id}`,
@@ -101,7 +144,6 @@ const ProductDetails = () => {
 
         try {
             setLikeLoading(true);
-
             const newState = !liked;
             setLiked(newState);
 
@@ -115,9 +157,13 @@ const ProductDetails = () => {
                 }
             );
 
-            if (!res.ok) {
-                setLiked(!newState);
+            if (res.status === 401) {
+                setLiked(!newState); // revert
+                setShowLoginPopup(true);
+                return;
             }
+
+            if (!res.ok) setLiked(!newState);
         } finally {
             setLikeLoading(false);
         }
@@ -137,13 +183,16 @@ const ProductDetails = () => {
                 }
             );
 
-            const data = await res.json();
+            if (res.status === 401) {
+                setShowLoginPopup(true);
+                return;
+            }
 
+            const data = await res.json();
             if (!res.ok) throw new Error(data.message);
 
             setIsInCart(true);
 
-            // Update cache
             const cached = sessionStorage.getItem(cacheKey);
             if (cached) {
                 const parsed = JSON.parse(cached);
@@ -161,22 +210,53 @@ const ProductDetails = () => {
     };
 
     const buyNow = () => {
-        navigate("/order", {
-            state: {
-                singleProduct: {
-                    product_id,
-                    title: product.product_title,
-                    price: product.product_price,
-                    images: product.product_images,
-                    quantity,
-                },
-            },
-        });
+        proceedBuyNow();
     };
 
-    const goToCart = () => {
-        navigate("/cart");
+    const proceedBuyNow = async () => {
+        try {
+            setBuyLoading(true);
+
+            const res = await fetch("https://no-wheels-1.onrender.com/user/profile", {
+                method: "GET",
+                credentials: "include",
+            });
+
+            if (res.status === 401) {
+                setShowLoginPopup(true);
+                return;
+            }
+
+            navigate("/order", {
+                state: {
+                    singleProduct: {
+                        product_id,
+                        title: product.product_title,
+                        price: product.product_price,
+                        images: product.product_images,
+                        quantity,
+                    },
+                },
+            });
+
+        } catch {
+            navigate("/order", {
+                state: {
+                    singleProduct: {
+                        product_id,
+                        title: product.product_title,
+                        price: product.product_price,
+                        images: product.product_images,
+                        quantity,
+                    },
+                },
+            });
+        } finally {
+            setBuyLoading(false);
+        }
     };
+
+    const goToCart = () => navigate("/cart");
 
     const handleShare = async () => {
         if (navigator.share) {
@@ -195,17 +275,13 @@ const ProductDetails = () => {
         }
     };
 
-    const nextImage = () => {
-        setSelectedImage((prev) =>
-            (prev + 1) % (product.product_images?.length || 1)
-        );
-    };
+    const nextImage = () =>
+        setSelectedImage((prev) => (prev + 1) % (product.product_images?.length || 1));
 
-    const prevImage = () => {
+    const prevImage = () =>
         setSelectedImage((prev) =>
             prev === 0 ? (product.product_images?.length || 1) - 1 : prev - 1
         );
-    };
 
     if (loading) {
         return (
@@ -241,6 +317,15 @@ const ProductDetails = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+
+            {/* Login Popup */}
+            {showLoginPopup && (
+                <LoginPopup
+                    onClose={() => setShowLoginPopup(false)}
+                    onLogin={() => navigate("/login")}
+                />
+            )}
+
             <div className="max-w-7xl mx-auto px-2 py-2">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
 
@@ -283,10 +368,7 @@ const ProductDetails = () => {
                                         <button
                                             key={index}
                                             onClick={() => setSelectedImage(index)}
-                                            className={`shrink-0 w-16 h-16 border-2 rounded-lg overflow-hidden ${selectedImage === index
-                                                ? "border-amber-500"
-                                                : "border-gray-200"
-                                                }`}
+                                            className={`shrink-0 w-16 h-16 border-2 rounded-lg overflow-hidden ${selectedImage === index ? "border-amber-500" : "border-gray-200"}`}
                                         >
                                             <img
                                                 src={img}
@@ -326,11 +408,7 @@ const ProductDetails = () => {
                                     >
                                         <Heart
                                             size={18}
-                                            className={
-                                                liked
-                                                    ? "fill-red-500 text-red-500"
-                                                    : "text-gray-600"
-                                            }
+                                            className={liked ? "fill-red-500 text-red-500" : "text-gray-600"}
                                         />
                                     </button>
                                 </div>
@@ -493,9 +571,8 @@ const ProductDetails = () => {
                                     </div>
                                 )}
 
-
-                                {/* Add to Cart / Added to Cart */}
                                 <div className="space-y-2">
+                                    {/* Add to Cart / Go to Cart */}
                                     <button
                                         onClick={isInCart ? undefined : addToCart}
                                         disabled={cartLoading}
@@ -528,12 +605,13 @@ const ProductDetails = () => {
                                         </button>
                                     )}
 
+                                    {/* Buy Now */}
                                     <button
                                         onClick={buyNow}
                                         disabled={buyLoading}
                                         className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                                     >
-                                        {buyLoading ? "Processing..." : "Buy Now"}
+                                        {buyLoading ? "Checking..." : "Buy Now"}
                                     </button>
                                 </div>
 

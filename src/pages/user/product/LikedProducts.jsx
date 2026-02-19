@@ -28,6 +28,11 @@ const LikedProducts = () => {
                     }
                 );
 
+                if (res.status === 401) {
+                    navigate("/login", { replace: true });
+                    return;
+                }
+
                 const data = await res.json();
 
                 if (res.ok) {
@@ -46,7 +51,7 @@ const LikedProducts = () => {
         };
 
         fetchLiked();
-    }, []);
+    }, [navigate]);
 
     if (loading) {
         return (

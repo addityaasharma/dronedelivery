@@ -2,9 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Package, Tag, Sparkles } from "lucide-react";
 
-/* ─────────────────────────────────────────────
-   PRODUCT IMAGE PLACEHOLDER
-───────────────────────────────────────────── */
 const ProductPlaceholder = ({ title }) => {
     const hue = [...(title || "X")].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
     const initials = title?.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "?";
@@ -17,9 +14,6 @@ const ProductPlaceholder = ({ title }) => {
     );
 };
 
-/* ─────────────────────────────────────────────
-   COLLECTION PLACEHOLDER (circle)
-───────────────────────────────────────────── */
 const CollectionPlaceholder = ({ name }) => {
     const hue = [...(name || "C")].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
     return (
@@ -32,16 +26,10 @@ const CollectionPlaceholder = ({ name }) => {
     );
 };
 
-/* ─────────────────────────────────────────────
-   SKELETON SHIMMER
-───────────────────────────────────────────── */
 const Shimmer = ({ className, style }) => (
     <div className={`shimmer rounded-2xl ${className}`} style={style} />
 );
 
-/* ─────────────────────────────────────────────
-   PRODUCT CARD
-───────────────────────────────────────────── */
 const ProductCard = ({ product, onClick }) => {
     const id = product.product_id || product.id;
     const title = product.product_title || product.title || "";
@@ -115,9 +103,6 @@ const ProductCard = ({ product, onClick }) => {
     );
 };
 
-/* ─────────────────────────────────────────────
-   MAIN DASHBOARD
-───────────────────────────────────────────── */
 const Dashboard = () => {
     const navigate = useNavigate();
 
@@ -271,7 +256,6 @@ const Dashboard = () => {
                             )}
                         </div>
                     ) : (
-                        /* fallback gradient if no banners */
                         <div className="w-full h-44 rounded-2xl flex items-center justify-center"
                             style={{ background: "linear-gradient(135deg, #fde68a, #fbbf24, #f59e0b)" }}>
                             <Sparkles size={32} style={{ color: "#fff" }} />
@@ -279,9 +263,6 @@ const Dashboard = () => {
                     )}
                 </section>
 
-                {/* ══════════════════════════════
-            COLLECTIONS — horizontal circles
-        ══════════════════════════════ */}
                 <section>
                     <h2 className="text-base font-bold mb-3" style={{ color: "#2e1f0e", letterSpacing: "0.01em" }}>
                         Shop by Collection
@@ -291,7 +272,7 @@ const Dashboard = () => {
                     <div className="flex gap-4 overflow-x-auto pb-1 hide-scrollbar">
                         {loadingCollections
                             ? Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2">
+                                <div key={i} className="shrink-0 flex flex-col items-center gap-2">
                                     <div className="w-16 h-16 rounded-full shimmer" />
                                     <div className="w-12 h-2.5 rounded shimmer" />
                                 </div>
@@ -302,7 +283,7 @@ const Dashboard = () => {
                                     <button
                                         key={col.id}
                                         onClick={() => navigate(`/collection/${col.id}`)}
-                                        className="flex-shrink-0 flex flex-col items-center gap-1.5 group"
+                                        className="shrink-0 flex flex-col items-center gap-1.5 group"
                                         style={{ minWidth: 72 }}
                                     >
                                         {/* Circle */}
@@ -349,9 +330,6 @@ const Dashboard = () => {
                     </div>
                 </section>
 
-                {/* ══════════════════════════════
-            SECTION DIVIDER
-        ══════════════════════════════ */}
                 <div className="flex items-center gap-3">
                     <div className="flex-1 h-px" style={{ background: "#ede8e1" }} />
                     <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#c4b49e" }}>
@@ -360,9 +338,6 @@ const Dashboard = () => {
                     <div className="flex-1 h-px" style={{ background: "#ede8e1" }} />
                 </div>
 
-                {/* ══════════════════════════════
-            PRODUCTS GRID
-        ══════════════════════════════ */}
                 <section>
                     <div className="flex items-baseline justify-between mb-3">
                         <h2 className="text-base font-bold" style={{ color: "#2e1f0e" }}>

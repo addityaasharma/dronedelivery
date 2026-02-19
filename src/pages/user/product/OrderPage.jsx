@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     MapPin,
@@ -11,7 +11,9 @@ import {
     Edit2,
     Truck,
     ShieldCheck,
-    Package
+    Package,
+    X,
+    LogIn
 } from "lucide-react";
 
 const formatTime = (date) =>
@@ -20,20 +22,52 @@ const formatTime = (date) =>
 const formatDate = (date) =>
     date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
 
+// ─── Login Popup ───────────────────────────────────────────────────────────────
+const LoginPopup = ({ onClose, onLogin }) => (
+    <div
+        className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)" }}
+    >
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative">
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+                <X size={18} className="text-gray-500" />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+                <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                    <LogIn size={26} className="text-amber-500" />
+                </div>
+
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Please Login</h2>
+                <p className="text-sm text-gray-500 mb-6">
+                    You need to be logged in to place an order. It only takes a moment!
+                </p>
+
+                <button
+                    onClick={onLogin}
+                    className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 rounded-full transition-colors shadow-sm mb-3"
+                >
+                    Go to Login
+                </button>
+
+                <button
+                    onClick={onClose}
+                    className="w-full text-sm text-gray-500 hover:text-gray-700 py-2 transition-colors"
+                >
+                    Continue Browsing
+                </button>
+            </div>
+        </div>
+    </div>
+);
+
 const OrderPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { cartItems = [], singleProduct = null } = location.state || {};
-
-    const items = singleProduct
-        ? [{ ...singleProduct, quantity: singleProduct.quantity || 1 }]
-        : cartItems;
-
-    if (items.length === 0) {
-        navigate("/");
-        return null;
-    }
-
     const [deliveryType, setDeliveryType] = useState("express");
     const [address, setAddress] = useState({
         name: "", phone: "", pincode: "", street: "", city: "", state: "",
@@ -44,6 +78,20 @@ const OrderPage = () => {
     const [upiError, setUpiError] = useState("");
     const [placing, setPlacing] = useState(false);
     const [placed, setPlaced] = useState(false);
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+    const items = singleProduct
+        ? [{ ...singleProduct, quantity: singleProduct.quantity || 1 }]
+        : cartItems;
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "instant" });
+    }, []);
+
+    if (items.length === 0) {
+        navigate("/");
+        return null;
+    }
 
     const subtotal = items.reduce((s, i) => {
         const price = i.price ?? i.product_price ?? 0;
@@ -82,7 +130,7 @@ const OrderPage = () => {
         setPlacing(true);
         try {
             for (const item of items) {
-                await fetch(
+                const res = await fetch(
                     `https://no-wheels-1.onrender.com/user/order/${item.product_id}`,
                     {
                         method: "POST",
@@ -95,6 +143,11 @@ const OrderPage = () => {
                         }),
                     }
                 );
+
+                if (res.status === 401) {
+                    setShowLoginPopup(true);
+                    return;
+                }
             }
             setPlaced(true);
         } finally {
@@ -151,8 +204,15 @@ const OrderPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-5xl mx-auto px-3 py-4 space-y-3">
 
+            {showLoginPopup && (
+                <LoginPopup
+                    onClose={() => setShowLoginPopup(false)}
+                    onLogin={() => navigate("/login")}
+                />
+            )}
+
+            <div className="max-w-5xl mx-auto px-3 py-4 space-y-3">
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <button
                         className="w-full flex items-center justify-between p-4"
@@ -216,7 +276,7 @@ const OrderPage = () => {
                     )}
                 </div>
 
-                {/* ── STEP 2: Delivery Option ────────────────────────────── */}
+                {/* Step 2 - Delivery Option */}
                 <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-7 h-7 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-sm font-bold shrink-0">2</div>
@@ -224,7 +284,6 @@ const OrderPage = () => {
                     </div>
 
                     <div className="space-y-2">
-                        {/* Express */}
                         <label className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${deliveryType === "express" ? "border-amber-400 bg-amber-50" : "border-gray-200 hover:border-gray-300"}`}>
                             <input
                                 type="radio"
@@ -274,7 +333,7 @@ const OrderPage = () => {
                     </div>
                 </div>
 
-                {/* ── STEP 3: Payment ─────────────────────────────────────── */}
+                {/* Step 3 - Payment */}
                 <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-7 h-7 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-sm font-bold shrink-0">3</div>
@@ -306,7 +365,7 @@ const OrderPage = () => {
                     </div>
                 </div>
 
-                {/* ── STEP 4: Order Summary ───────────────────────────────── */}
+                {/* Step 4 - Order Summary */}
                 <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-7 h-7 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-sm font-bold shrink-0">4</div>
@@ -337,7 +396,6 @@ const OrderPage = () => {
                         })}
                     </div>
 
-                    {/* Price breakdown */}
                     <div className="border-t border-gray-100 pt-3 space-y-2">
                         <div className="flex justify-between text-sm text-gray-600">
                             <span>Subtotal ({items.reduce((s, i) => s + (i.quantity || 1), 0)} items)</span>
@@ -356,7 +414,7 @@ const OrderPage = () => {
                     </div>
                 </div>
 
-                {/* ── Place Order ─────────────────────────────────────────── */}
+                {/* Place Order */}
                 <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
                         <ShieldCheck size={14} className="text-green-600 shrink-0" />

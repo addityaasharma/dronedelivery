@@ -14,7 +14,6 @@ import {
     ChevronRight,
 } from "lucide-react";
 
-// ─── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
     PLACED: { label: "Order Placed", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200", icon: Package },
     CONFIRMED: { label: "Confirmed", color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200", icon: CheckCircle2 },
@@ -27,7 +26,6 @@ const STATUS_CONFIG = {
 const getStatus = (status) =>
     STATUS_CONFIG[status?.toUpperCase()] || { label: status, color: "text-gray-600", bg: "bg-gray-50", border: "border-gray-200", icon: Clock };
 
-// ─── Shimmer card ──────────────────────────────────────────────────────────────
 const ShimmerCard = () => (
     <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
         <style>{`
@@ -59,7 +57,6 @@ const ShimmerCard = () => (
     </div>
 );
 
-// ─── TrackOrder ────────────────────────────────────────────────────────────────
 const TrackOrder = () => {
     const navigate = useNavigate();
 
@@ -70,7 +67,6 @@ const TrackOrder = () => {
     const [detailLoading, setDetailLoading] = useState(null);
     const [cancelling, setCancelling] = useState(null);
 
-    // ── Fetch all orders ───────────────────────────────────────────────────────
     useEffect(() => {
         const fetchOrders = async () => {
             try {
@@ -78,6 +74,12 @@ const TrackOrder = () => {
                     "https://no-wheels-1.onrender.com/user/order",
                     { credentials: "include" }
                 );
+
+                if (res.status === 401) {
+                    navigate("/login", { replace: true });
+                    return;
+                }
+
                 const data = await res.json();
                 if (res.ok) setOrders(data.orders || []);
             } catch {
@@ -87,9 +89,8 @@ const TrackOrder = () => {
             }
         };
         fetchOrders();
-    }, []);
+    }, [navigate]);
 
-    // ── Toggle order details ───────────────────────────────────────────────────
     const openOrder = async (order_id) => {
         if (openOrderId === order_id) {
             setOpenOrderId(null);
@@ -104,6 +105,12 @@ const TrackOrder = () => {
                 `https://no-wheels-1.onrender.com/user/order/${order_id}`,
                 { credentials: "include" }
             );
+
+            if (res.status === 401) {
+                navigate("/login", { replace: true });
+                return;
+            }
+
             const data = await res.json();
             if (res.ok) {
                 setOrderDetails((prev) => ({ ...prev, [order_id]: data.order }));
@@ -115,7 +122,6 @@ const TrackOrder = () => {
         }
     };
 
-    // ── Cancel order ───────────────────────────────────────────────────────────
     const cancelOrder = async (order_id) => {
         if (!window.confirm("Are you sure you want to cancel this order?")) return;
 
@@ -125,6 +131,12 @@ const TrackOrder = () => {
                 `https://no-wheels-1.onrender.com/user/order/${order_id}`,
                 { method: "PUT", credentials: "include" }
             );
+
+            if (res.status === 401) {
+                navigate("/login", { replace: true });
+                return;
+            }
+
             if (res.ok) {
                 setOrders((prev) =>
                     prev.map((o) =>
@@ -139,7 +151,6 @@ const TrackOrder = () => {
         }
     };
 
-    // ── Loading skeleton ───────────────────────────────────────────────────────
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50">
@@ -151,7 +162,6 @@ const TrackOrder = () => {
         );
     }
 
-    // ── Empty state ────────────────────────────────────────────────────────────
     if (orders.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -172,7 +182,6 @@ const TrackOrder = () => {
         );
     }
 
-    // ── Main ───────────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-3xl mx-auto px-3 py-4 space-y-3">
@@ -196,14 +205,12 @@ const TrackOrder = () => {
                             key={order.order_id}
                             className="bg-white rounded-lg border border-gray-200 overflow-hidden"
                         >
-                            {/* ── Order summary row ── */}
                             <button
                                 onClick={() => openOrder(order.order_id)}
                                 className="w-full text-left p-4 hover:bg-gray-50 transition-colors"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1 min-w-0">
-                                        {/* Order number + date */}
                                         <div className="flex items-center gap-2 flex-wrap mb-1">
                                             <p className="font-bold text-gray-900 text-sm">
                                                 Order #{order.order_number}
@@ -215,13 +222,11 @@ const TrackOrder = () => {
                                             )}
                                         </div>
 
-                                        {/* Items & price */}
                                         <p className="text-sm text-gray-600 mb-2">
                                             {order.total_items} {order.total_items === 1 ? "item" : "items"} &nbsp;·&nbsp;
                                             <span className="font-semibold text-gray-900">₹{order.total_price?.toLocaleString()}</span>
                                         </p>
 
-                                        {/* Status badge */}
                                         <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${status.color} ${status.bg} ${status.border}`}>
                                             <StatusIcon size={12} />
                                             {status.label}
@@ -235,10 +240,8 @@ const TrackOrder = () => {
                                 </div>
                             </button>
 
-                            {/* ── Expanded details ── */}
                             {isOpen && (
                                 <div className="border-t border-gray-100">
-                                    {/* Loading detail shimmer */}
                                     {isLoadingDetail && (
                                         <div className="p-4 space-y-3">
                                             {[1, 2].map(i => (
@@ -314,9 +317,7 @@ const TrackOrder = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Actions */}
                                             <div className="border-t border-gray-100 pt-3 flex items-center gap-4">
-                                                {/* Cancel */}
                                                 {!isCancelled && (
                                                     <button
                                                         onClick={() => cancelOrder(order.order_id)}

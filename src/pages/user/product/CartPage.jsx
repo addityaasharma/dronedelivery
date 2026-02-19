@@ -20,6 +20,11 @@ const CartPage = () => {
                     { credentials: "include" }
                 );
 
+                if (res.status === 401) {
+                    navigate("/login", { replace: true });
+                    return;
+                }
+
                 const data = await res.json();
 
                 if (res.ok) {
@@ -42,7 +47,7 @@ const CartPage = () => {
     // =========================
     const updateCart = async (product_id, action) => {
         try {
-            await fetch(
+            const res = await fetch(
                 `https://no-wheels-1.onrender.com/user/cart/${product_id}`,
                 {
                     method: "PUT",
@@ -51,6 +56,11 @@ const CartPage = () => {
                     body: JSON.stringify({ action }),
                 }
             );
+
+            if (res.status === 401) {
+                navigate("/login", { replace: true });
+                return;
+            }
 
             setCart((prev) =>
                 prev
@@ -86,13 +96,18 @@ const CartPage = () => {
     // =========================
     const removeFromCart = async (product_id) => {
         try {
-            await fetch(
+            const res = await fetch(
                 `https://no-wheels-1.onrender.com/user/cart/${product_id}`,
                 {
                     method: "DELETE",
                     credentials: "include",
                 }
             );
+
+            if (res.status === 401) {
+                navigate("/login", { replace: true });
+                return;
+            }
 
             setCart(prev => prev.filter(item => item.product_id !== product_id));
             setSelected(prev => prev.filter(id => id !== product_id));

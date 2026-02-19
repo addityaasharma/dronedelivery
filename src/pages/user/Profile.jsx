@@ -2,12 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ArrowLeft, Pencil, Check, X,
-    User, Mail, Phone, MapPin, Loader2
+    User, Mail, Phone, MapPin, Loader2, LogOut
 } from "lucide-react";
 
-/* ─────────────────────────────────────────────
-   AVATAR INITIALS
-───────────────────────────────────────────── */
 const Avatar = ({ first, last }) => {
     const initials =
         `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
@@ -26,9 +23,6 @@ const Avatar = ({ first, last }) => {
     );
 };
 
-/* ─────────────────────────────────────────────
-   FIELD ROW
-───────────────────────────────────────────── */
 const FieldRow = ({ icon: Icon, label, type = "text", value, editMode, onChange, multiline }) => {
     const base = {
         fontFamily: "'Georgia', serif",
@@ -50,7 +44,7 @@ const FieldRow = ({ icon: Icon, label, type = "text", value, editMode, onChange,
             }}
         >
             <div
-                className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center"
+                className="mt-0.5 shrink-0 w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ background: "#fef3c7" }}
             >
                 <Icon size={15} style={{ color: "#d97706" }} />
@@ -85,9 +79,6 @@ const FieldRow = ({ icon: Icon, label, type = "text", value, editMode, onChange,
     );
 };
 
-/* ─────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────── */
 const Profile = () => {
     const navigate = useNavigate();
     const fetchedOnce = useRef(false);
@@ -100,14 +91,14 @@ const Profile = () => {
         address: "",
     });
 
-    const [snapshot, setSnapshot] = useState(null); // for cancel revert
+    const [snapshot, setSnapshot] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [loggingOut, setLoggingOut] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
 
-    /* ── Fetch ── */
     useEffect(() => {
         if (fetchedOnce.current) return;
         fetchedOnce.current = true;
@@ -118,20 +109,26 @@ const Profile = () => {
                     method: "GET",
                     credentials: "include",
                 });
+
+                if (res.status === 401 || res.status === 403) {
+                    navigate("/login", { replace: true });
+                    return;
+                }
+
                 const data = await res.json();
                 if (res.ok && data.data) setProfile(data.data);
             } catch {
-                setError("Could not load profile");
+                navigate("/login", { replace: true });
             } finally {
                 setLoading(false);
             }
         };
-        fetchProfile();
-    }, []);
 
-    const updateField = (key, value) => {
+        fetchProfile();
+    }, [navigate]);
+
+    const updateField = (key, value) =>
         setProfile((prev) => ({ ...prev, [key]: value }));
-    };
 
     const startEdit = () => {
         setSnapshot({ ...profile });
@@ -146,7 +143,6 @@ const Profile = () => {
         setError("");
     };
 
-    /* ── Save ── */
     const handleSave = async () => {
         try {
             setSaving(true);
@@ -173,20 +169,36 @@ const Profile = () => {
         }
     };
 
-    /* ── Full-name display ── */
+    const handleLogout = async () => {
+        setLoggingOut(true);
+        try {
+            const res = await fetch("https://no-wheels-1.onrender.com/user/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+            if (res.status === 401) {
+                navigate("/login", { replace: true });
+                return;
+            }
+        } catch {
+            // Network error – still redirect
+        } finally {
+            setLoggingOut(false);
+        }
+        navigate("/login", { replace: true });
+    };
+
     const fullName =
         [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
         "Your Name";
 
-    /* ─── RENDER ─── */
     return (
         <div
             className="min-h-screen"
             style={{ background: "#f7f4ef", fontFamily: "'Georgia', serif" }}
         >
-            {/* ── Back button (no full header) ── */}
             <div className="px-4 pt-4">
-                <div className="max-w-lg mx-auto">
+                <div className="max-w-lg mx-auto flex items-center justify-between">
                     <button
                         onClick={() => navigate("/")}
                         className="flex items-center gap-1.5 text-sm transition-colors"
@@ -197,24 +209,58 @@ const Profile = () => {
                         <ArrowLeft size={16} />
                         Back
                     </button>
+
+                    <button
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                        className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-xl transition-all duration-200"
+                        style={{
+                            background: loggingOut ? "#fde68a" : "#fff5f5",
+                            color: loggingOut ? "#b45309" : "#dc2626",
+                            border: "1px solid",
+                            borderColor: loggingOut ? "#fde68a" : "#fecaca",
+                            fontFamily: "'Georgia', serif",
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!loggingOut) {
+                                e.currentTarget.style.background = "#fee2e2";
+                                e.currentTarget.style.borderColor = "#fca5a5";
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!loggingOut) {
+                                e.currentTarget.style.background = "#fff5f5";
+                                e.currentTarget.style.borderColor = "#fecaca";
+                            }
+                        }}
+                    >
+                        {loggingOut ? (
+                            <>
+                                <Loader2 size={14} className="animate-spin" />
+                                Signing out…
+                            </>
+                        ) : (
+                            <>
+                                <LogOut size={14} />
+                                Sign out
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
 
             <div className="max-w-lg mx-auto px-4 pt-6 pb-16">
 
-                {/* ── Hero card ── */}
                 <div
                     className="rounded-3xl overflow-hidden mb-4 shadow-sm"
                     style={{ background: "#fff", border: "1px solid #ede8e1" }}
                 >
-                    {/* Warm banner */}
                     <div
                         className="h-28 relative"
                         style={{
                             background: "linear-gradient(135deg, #fde68a 0%, #fbbf24 50%, #f59e0b 100%)",
                         }}
                     >
-                        {/* Edit / action buttons */}
                         <div className="absolute top-3 right-3 flex gap-2">
                             {editMode ? (
                                 <>
@@ -249,7 +295,6 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    {/* Avatar + name */}
                     <div className="px-6 pb-5">
                         <div className="-mt-10 mb-3">
                             {loading ? (
@@ -279,12 +324,10 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* ── Fields card ── */}
                 <div
                     className="rounded-3xl overflow-hidden shadow-sm"
                     style={{ background: "#fff", border: "1px solid #ede8e1" }}
                 >
-                    {/* Section title */}
                     <div className="px-5 pt-5 pb-2 flex items-center justify-between">
                         <p className="text-xs font-bold tracking-widest uppercase" style={{ color: "#b8a090" }}>
                             Personal Details
@@ -362,7 +405,6 @@ const Profile = () => {
                         </div>
                     )}
 
-                    {/* Save button (shown only in edit mode) */}
                     {editMode && (
                         <div className="px-5 pb-5">
                             <button
@@ -393,6 +435,46 @@ const Profile = () => {
                             </button>
                         </div>
                     )}
+                </div>
+
+                <div className="mt-4">
+                    <button
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                        className="w-full py-3 rounded-2xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                        style={{
+                            background: "#fff",
+                            color: loggingOut ? "#b45309" : "#dc2626",
+                            border: "1px solid",
+                            borderColor: loggingOut ? "#fde68a" : "#fecaca",
+                            fontFamily: "'Georgia', serif",
+                            letterSpacing: "0.02em",
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!loggingOut) {
+                                e.currentTarget.style.background = "#fff5f5";
+                                e.currentTarget.style.borderColor = "#fca5a5";
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!loggingOut) {
+                                e.currentTarget.style.background = "#fff";
+                                e.currentTarget.style.borderColor = "#fecaca";
+                            }
+                        }}
+                    >
+                        {loggingOut ? (
+                            <>
+                                <Loader2 size={15} className="animate-spin" />
+                                Signing out…
+                            </>
+                        ) : (
+                            <>
+                                <LogOut size={15} />
+                                Sign Out
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
 
