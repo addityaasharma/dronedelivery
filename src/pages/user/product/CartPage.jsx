@@ -201,7 +201,7 @@ const CartPage = () => {
                                             {/* Image */}
                                             <div
                                                 className="w-32 h-32 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden cursor-pointer border border-gray-200"
-                                                onClick={() => navigate(`/product/${item.product_id}`)}
+                                                onClick={() => navigate(`/product/${item.unique_code}/${item.product_slug}`)}
                                             >
                                                 <img
                                                     src={item.images?.[0]}
@@ -214,7 +214,7 @@ const CartPage = () => {
                                             <div className="flex-1 min-w-0">
                                                 <h3
                                                     className="font-semibold text-gray-900 line-clamp-2 mb-2 cursor-pointer hover:text-amber-600"
-                                                    onClick={() => navigate(`/product/${item.product_id}`)}
+                                                    onClick={() => navigate(`/product/${item.unique_code}/${item.product_slug}`)}
                                                 >
                                                     {item.title}
                                                 </h3>
@@ -238,7 +238,7 @@ const CartPage = () => {
                                                             <Minus size={16} className={item.quantity <= 1 ? 'text-gray-300' : 'text-gray-700'} />
                                                         </button>
 
-                                                        <span className="px-4 py-2 font-semibold text-gray-900 min-w-[3rem] text-center">
+                                                        <span className="px-4 py-2 font-semibold text-gray-900 min-w-12 text-center">
                                                             {item.quantity}
                                                         </span>
 

@@ -267,7 +267,7 @@ const TrackOrder = () => {
                                                         <div
                                                             key={p.product_id}
                                                             className="flex items-center gap-3 cursor-pointer group"
-                                                            onClick={() => navigate(`/product/${p.product_id}`)}
+                                                            onClick={() => navigate(`/product/${p.product_uniqueCode}/${p.product_slug}`)}
                                                         >
                                                             <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shrink-0">
                                                                 <img

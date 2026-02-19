@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Package, Tag, Layers } from "lucide-react";
 
@@ -37,7 +37,6 @@ const SkeletonCard = () => (
    PRODUCT CARD
 ───────────────────────────────────────────── */
 const ProductCard = ({ product, onClick }) => {
-    const id = product.id || product.product_id;
     const title = product.title || product.product_title || "";
     const price = product.price || product.product_price;
     const comparePrice = product.compare_price || product.product_comparable_price;
@@ -116,7 +115,6 @@ const CollectionPage = () => {
     const [collection, setCollection] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     const [headerScrolled, setHeaderScrolled] = useState(false);
 
     /* ── Shrink header on scroll ── */
@@ -210,7 +208,7 @@ const CollectionPage = () => {
         }
       `}</style>
 
-            {/* ── STICKY BACK BAR (appears after scroll) ── */}
+            {/* ── STICKY BACK BAR ── */}
             <div
                 className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center gap-3 transition-all duration-300"
                 style={{
@@ -250,11 +248,9 @@ const CollectionPage = () => {
                             style={{ background: "linear-gradient(135deg, #fde68a 0%, #fbbf24 50%, #f59e0b 100%)" }} />
                     )}
 
-                    {/* Gradient overlay */}
                     <div className="absolute inset-0"
                         style={{ background: "linear-gradient(to top, rgba(46,31,14,0.65) 0%, transparent 60%)" }} />
 
-                    {/* Title over banner */}
                     <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
                         <h1 className="text-2xl font-bold text-white leading-tight">
                             {collection?.collection_name}
@@ -295,12 +291,13 @@ const CollectionPage = () => {
                     {loading
                         ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
                         : products.map((p) => {
-                            const pid = p.id || p.product_id;
+                            const uniqueCode = p.product_uniqueCode || p.unique_code;
+                            const slug = p.product_slug || p.slug;
                             return (
                                 <ProductCard
-                                    key={pid}
+                                    key={p.product_id || p.id}
                                     product={p}
-                                    onClick={() => navigate(`/product/${pid}`)}
+                                    onClick={() => navigate(`/product/${uniqueCode}/${slug}`)}
                                 />
                             );
                         })}

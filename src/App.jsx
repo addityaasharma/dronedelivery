@@ -21,10 +21,10 @@ const App = () => {
 
       <Route element={<MainLayout />}>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/category/:id" element={<CategoryProducts />} />
+        <Route path="/category/:id/:slug" element={<CategoryProducts />} />
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/product/:product_id" element={<ProductDetails />} />
+        <Route path="/product/:unique_code/:slug" element={<ProductDetails />} />
         <Route path="/liked-products" element={<LikedProducts />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout/:product_id" element={<CheckoutPage />} />

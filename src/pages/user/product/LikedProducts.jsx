@@ -91,7 +91,7 @@ const LikedProducts = () => {
                         <div
                             key={p.product_id}
                             onClick={() =>
-                                navigate(`/product/${p.product_id}`)
+                                navigate(`/product/${p.product_uniqueCode}/${p.product_slug}`)
                             }
                             className="bg-white rounded-xl shadow-sm p-3 cursor-pointer hover:shadow-md transition"
                         >

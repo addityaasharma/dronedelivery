@@ -370,7 +370,7 @@ const CategoryProducts = () => {
                             <ProductCard
                                 key={`${p.product_id}-${p.product_uniqueCode}`}
                                 product={p}
-                                onClick={() => navigate(`/product/${p.product_id}`)}
+                                onClick={() => navigate(`/product/${p.product_uniqueCode}/${p.product_slug}`)}
                             />
                         ))}
                 </div>

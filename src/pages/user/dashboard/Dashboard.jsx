@@ -31,7 +31,6 @@ const Shimmer = ({ className, style }) => (
 );
 
 const ProductCard = ({ product, onClick }) => {
-    const id = product.product_id || product.id;
     const title = product.product_title || product.title || "";
     const price = product.product_price || product.price;
     const comparePrice = product.product_comparable_price || product.original_price;
@@ -153,28 +152,23 @@ const Dashboard = () => {
     useEffect(() => {
         const load = async () => {
             setLoadingProducts(true);
-
             try {
                 const res = await fetch(
                     "https://no-wheels-1.onrender.com/user/product?limit=12",
                     {
                         credentials: "include",
-                        cache: "no-store" // ← force fresh response
+                        cache: "no-store",
                     }
                 );
-
                 const data = await res.json();
                 const feed = data.data || data.products || data || [];
-
                 setProducts(feed);
-
             } catch (err) {
                 console.log("Failed to load products", err);
             } finally {
                 setLoadingProducts(false);
             }
         };
-
         load();
     }, []);
 
@@ -212,9 +206,7 @@ const Dashboard = () => {
 
             <main className="max-w-2xl mx-auto px-3 py-4 space-y-6">
 
-                {/* ══════════════════════════════
-            BANNER CAROUSEL
-        ══════════════════════════════ */}
+                {/* ══ BANNER CAROUSEL ══ */}
                 <section>
                     {loadingBanners ? (
                         <Shimmer className="w-full h-44 md:h-64" style={{ borderRadius: 20 }} />
@@ -263,12 +255,12 @@ const Dashboard = () => {
                     )}
                 </section>
 
+                {/* ══ COLLECTIONS ══ */}
                 <section>
                     <h2 className="text-base font-bold mb-3" style={{ color: "#2e1f0e", letterSpacing: "0.01em" }}>
                         Shop by Collection
                     </h2>
 
-                    {/* Horizontal scroll row */}
                     <div className="flex gap-4 overflow-x-auto pb-1 hide-scrollbar">
                         {loadingCollections
                             ? Array.from({ length: 6 }).map((_, i) => (
@@ -286,7 +278,6 @@ const Dashboard = () => {
                                         className="shrink-0 flex flex-col items-center gap-1.5 group"
                                         style={{ minWidth: 72 }}
                                     >
-                                        {/* Circle */}
                                         <div
                                             className="w-16 h-16 rounded-full overflow-hidden transition-all duration-300 group-hover:scale-105"
                                             style={{
@@ -310,7 +301,6 @@ const Dashboard = () => {
                                             </div>
                                         </div>
 
-                                        {/* Label */}
                                         <span
                                             className="text-center text-[11px] font-semibold leading-tight"
                                             style={{
@@ -338,6 +328,7 @@ const Dashboard = () => {
                     <div className="flex-1 h-px" style={{ background: "#ede8e1" }} />
                 </div>
 
+                {/* ══ PRODUCTS GRID ══ */}
                 <section>
                     <div className="flex items-baseline justify-between mb-3">
                         <h2 className="text-base font-bold" style={{ color: "#2e1f0e" }}>
@@ -361,21 +352,17 @@ const Dashboard = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {products.map((p) => {
-                                const id = p.product_id || p.id;
-                                return (
-                                    <ProductCard
-                                        key={id}
-                                        product={p}
-                                        onClick={() => navigate(`/product/${id}`)}
-                                    />
-                                );
-                            })}
+                            {products.map((p) => (
+                                <ProductCard
+                                    key={p.product_id || p.id}
+                                    product={p}
+                                    onClick={() => navigate(`/product/${p.product_uniqueCode}/${p.product_slug}`)}
+                                />
+                            ))}
                         </div>
                     )}
                 </section>
 
-                {/* Bottom padding */}
                 <div className="h-6" />
             </main>
         </div>

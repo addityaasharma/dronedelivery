@@ -163,7 +163,7 @@ const Header = () => {
                                     <li
                                         key={cat.category_id}
                                         onClick={() =>
-                                            goTo(`/category/${cat.category_id}`)
+                                            goTo(`/category/${cat.category_id}/${cat.category_slug}`)
                                         }
                                         className="flex items-center gap-3 cursor-pointer hover:text-amber-600"
                                     >
