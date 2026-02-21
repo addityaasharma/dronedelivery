@@ -14,6 +14,7 @@ import CollectionPage from "./pages/user/dashboard/CollectionPage";
 import MainLayout from "./layers/MainLayout";
 import OrderPage from "./pages/user/product/OrderPage";
 import SearchResults from "./pages/user/product/SearchResults";
+import CategoryPage from "./pages/user/dashboard/CategoryPage";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/category/:id/:slug" element={<CategoryProducts />} />
+        <Route path="/category" element={<CategoryPage />} />
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/search" element={<SearchResults />} />

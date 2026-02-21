@@ -16,7 +16,6 @@ import {
     FiChevronDown,
 } from "react-icons/fi";
 
-/* ── Accordion section for mobile ── */
 const FooterSection = ({ title, children }) => {
     const [open, setOpen] = useState(false);
     return (
@@ -42,7 +41,6 @@ const FooterSection = ({ title, children }) => {
     );
 };
 
-/* ── Desktop section (always visible) ── */
 const FooterCol = ({ title, children }) => (
     <div>
         <h4 className="text-sm font-bold tracking-widest uppercase mb-4"
@@ -92,7 +90,6 @@ const Footer = () => {
     return (
         <footer style={{ background: "#f0ebe3", borderTop: "1px solid #e0d8ce", fontFamily: "'Georgia', serif" }}>
 
-            {/* ── TOP BAND ── */}
             <div
                 className="px-4 py-4 flex flex-wrap items-center justify-between gap-3"
                 style={{ background: "#2e1f0e", borderBottom: "1px solid #3d2a12" }}
@@ -123,10 +120,7 @@ const Footer = () => {
                 </div>
             </div>
 
-            {/* ── MAIN CONTENT ── */}
             <div className="max-w-4xl mx-auto px-4 py-6">
-
-                {/* Mobile: accordions */}
                 <div className="sm:hidden space-y-0">
                     <FooterSection title="Quick Links">
                         <ul className="space-y-1">
@@ -167,7 +161,6 @@ const Footer = () => {
                     </FooterSection>
                 </div>
 
-                {/* Desktop: 3-column grid */}
                 <div className="hidden sm:grid grid-cols-3 gap-10">
                     <FooterCol title="Quick Links">
                         <ul className="space-y-1">
@@ -208,7 +201,6 @@ const Footer = () => {
                     </FooterCol>
                 </div>
 
-                {/* Trust badges */}
                 <div className="mt-8 pt-6 flex flex-wrap justify-center gap-4"
                     style={{ borderTop: "1px solid #e0d8ce" }}>
                     {[
@@ -226,7 +218,6 @@ const Footer = () => {
                 </div>
             </div>
 
-            {/* ── BOTTOM BAR ── */}
             <div
                 className="text-center px-4 py-3"
                 style={{ background: "#e8dfd5", borderTop: "1px solid #d8cfc5" }}
@@ -235,9 +226,6 @@ const Footer = () => {
                     © {new Date().getFullYear()} No Wheels. All rights reserved. &nbsp;·&nbsp; Made with ❤️ in India
                 </p>
             </div>
-
-            {/* ── MOBILE BOTTOM NAV ── */}
-            <MobileBottomNav />
         </footer>
     );
 };
@@ -265,65 +253,5 @@ const ContactInfo = () => (
     </div>
 );
 
-/* ── Mobile sticky bottom nav ── */
-const MobileBottomNav = () => {
-    const navigate = useNavigate();
-    const path = window.location.pathname;
-
-    const tabs = [
-        { icon: <FiHome size={22} />, label: "Home", path: "/" },
-        { icon: <FiGrid size={22} />, label: "Categories", path: "/categories" },
-        { icon: <FiShoppingCart size={22} />, label: "Cart", path: "/cart" },
-        { icon: <FiHeart size={22} />, label: "Wishlist", path: "/liked-products" },
-        { icon: <FiUser size={22} />, label: "Profile", path: "/profile" },
-    ];
-
-    return (
-        <div
-            className="sm:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
-            style={{
-                background: "rgba(255,252,248,0.97)",
-                backdropFilter: "blur(14px)",
-                borderTop: "1px solid #e8dfd5",
-                boxShadow: "0 -4px 20px rgba(180,140,100,0.12)",
-                paddingBottom: "env(safe-area-inset-bottom)",
-            }}
-        >
-            {tabs.map(({ icon, label, path: tabPath }) => {
-                const active = path === tabPath;
-                return (
-                    <button
-                        key={label}
-                        onClick={() => navigate(tabPath)}
-                        className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-all"
-                        style={{ color: active ? "#d97706" : "#b8a090" }}
-                    >
-                        <span
-                            className="transition-transform"
-                            style={{ transform: active ? "scale(1.15)" : "scale(1)" }}
-                        >
-                            {icon}
-                        </span>
-                        <span
-                            className="text-[10px] font-semibold"
-                            style={{
-                                color: active ? "#d97706" : "#b8a090",
-                                fontFamily: "'Georgia', serif",
-                            }}
-                        >
-                            {label}
-                        </span>
-                        {active && (
-                            <span
-                                className="absolute bottom-0 w-8 rounded-full"
-                                style={{ height: 2.5, background: "#d97706", marginBottom: "env(safe-area-inset-bottom)" }}
-                            />
-                        )}
-                    </button>
-                );
-            })}
-        </div>
-    );
-};
 
 export default Footer;

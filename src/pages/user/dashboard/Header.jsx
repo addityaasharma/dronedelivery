@@ -1,71 +1,27 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-    FiMenu,
-    FiX,
-    FiSearch,
-    FiMapPin,
-    FiUser,
-    FiHeart,
-    FiShoppingCart,
-    FiHome,
-    FiClock,
-    FiTrendingUp,
-} from "react-icons/fi";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FiSearch } from "react-icons/fi";
 import { GiMedicines } from "react-icons/gi";
 
-const Header = () => {
-    const [open, setOpen] = useState(false);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+const NAV_LINKS = [
+    { label: "Home", path: "/" },
+    { label: "Categories", path: "/categories" },
+    { label: "Cart", path: "/cart" },
+    { label: "Wishlist", path: "/liked-products" },
+    { label: "Profile", path: "/profile" },
+];
 
+const Header = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
     const [activeSuggestion, setActiveSuggestion] = useState(-1);
-
     const navigate = useNavigate();
-    const fetchedOnce = useRef(false);
+    const { pathname } = useLocation();
     const debounceRef = useRef(null);
     const searchRef = useRef(null);
     const dropdownRef = useRef(null);
-
-    const goTo = (path) => {
-        setOpen(false);
-        navigate(path);
-    };
-
-
-    useEffect(() => {
-        if (fetchedOnce.current) return;
-        fetchedOnce.current = true;
-
-        const cached = sessionStorage.getItem("categories");
-        if (cached) {
-            setCategories(JSON.parse(cached));
-            setLoading(false);
-            return;
-        }
-
-        const fetchCategories = async () => {
-            try {
-                const res = await fetch("https://no-wheels-1.onrender.com/user/category");
-                const data = await res.json();
-                if (res.ok) {
-                    setCategories(data.categories || []);
-                    sessionStorage.setItem("categories", JSON.stringify(data.categories));
-                }
-            } catch (err) {
-                console.log("Category fetch failed", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCategories();
-    }, []);
-
 
     const fetchSuggestions = useCallback(async (query) => {
         if (!query.trim()) {
@@ -136,8 +92,10 @@ const Header = () => {
     useEffect(() => {
         const handler = (e) => {
             if (
-                dropdownRef.current && !dropdownRef.current.contains(e.target) &&
-                searchRef.current && !searchRef.current.contains(e.target)
+                dropdownRef.current &&
+                !dropdownRef.current.contains(e.target) &&
+                searchRef.current &&
+                !searchRef.current.contains(e.target)
             ) {
                 setShowDropdown(false);
             }
@@ -146,208 +104,290 @@ const Header = () => {
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
+    const isActive = (path) =>
+        path === "/" ? pathname === "/" : pathname === path || pathname.startsWith(path + "/");
+
     return (
-        <>
-            <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/60"
-                style={{ borderBottom: "1px solid #f0ebe4" }}>
-                <div className="flex items-center justify-between px-4 py-3">
+        <header
+            className="sticky top-0 z-50 bg-white"
+            style={{
+                fontFamily: "'Georgia', serif",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                borderBottom: "1px solid #f0ece6",
+            }}
+        >
+            {/* ── Top Row: Logo + Search ── */}
+            <div
+                style={{
+                    maxWidth: 1200,
+                    margin: "0 auto",
+                    padding: "14px 20px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 20,
+                }}
+            >
+                {/* Logo */}
+                <div
+                    onClick={() => navigate("/")}
+                    style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flexShrink: 0 }}
+                >
+                    <GiMedicines style={{ color: "#f59e0b", fontSize: 28 }} />
+                    <span style={{ fontSize: 22, fontWeight: 800, color: "#1a1209", letterSpacing: "-0.5px" }}>
+                        No<span style={{ color: "#f59e0b" }}>Wheels</span>
+                    </span>
+                </div>
 
-                    <button
-                        type="button"
-                        onClick={() => setOpen(true)}
-                        className="p-2 rounded-md hover:bg-gray-100"
+                {/* Search Bar */}
+                <div style={{ flex: 1, position: "relative" }} ref={searchRef}>
+                    {/* Input row */}
+                    <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        border: "2px solid #e5e7eb",
+                        borderRadius: 10,
+                        overflow: "hidden",
+                        background: "#f9fafb",
+                        transition: "border-color 0.2s, box-shadow 0.2s",
+                    }}
+                        onFocusCapture={e => {
+                            e.currentTarget.style.borderColor = "#f59e0b";
+                            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(245,158,11,0.12)";
+                            e.currentTarget.style.background = "#fff";
+                        }}
+                        onBlurCapture={e => {
+                            e.currentTarget.style.borderColor = "#e5e7eb";
+                            e.currentTarget.style.boxShadow = "none";
+                            e.currentTarget.style.background = "#f9fafb";
+                        }}
                     >
-                        <FiMenu size={22} />
-                    </button>
+                        {/* Search icon */}
+                        {/* <FiSearch style={{ marginLeft: 14, color: "#9ca3af", fontSize: 16, flexShrink: 0, pointerEvents: "none" }} /> */}
 
-                    <div className="flex-1 px-4 relative" ref={searchRef}>
-                        <div className="relative">
-                            <FiSearch
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                                size={15}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Search medicines…"
-                                value={searchQuery}
-                                onChange={handleSearchChange}
-                                onKeyDown={handleKeyDown}
-                                onFocus={() => searchQuery && suggestions.length > 0 && setShowDropdown(true)}
-                                className="w-full max-w-md mx-auto block pl-9 pr-10 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
-                                style={{ fontFamily: "'Georgia', serif" }}
-                            />
-                            <button
-                                onClick={() => handleSearchSubmit()}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 bg-amber-500 hover:bg-amber-600 text-white rounded-full p-1.5 transition-colors"
-                            >
-                                <FiSearch size={13} />
-                            </button>
+                        {/* Input */}
+                        <input
+                            type="text"
+                            placeholder="Search medicines, health products..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            onKeyDown={handleKeyDown}
+                            onFocus={() => searchQuery && suggestions.length > 0 && setShowDropdown(true)}
+                            style={{
+                                flex: 1,
+                                padding: "11px 12px",
+                                border: "none",
+                                background: "transparent",
+                                fontSize: 14,
+                                color: "#111827",
+                                outline: "none",
+                                fontFamily: "'Georgia', serif",
+                            }}
+                        />
 
-                            {searchLoading && (
-                                <div className="absolute right-9 top-1/2 -translate-y-1/2">
-                                    <div className="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                                </div>
-                            )}
-                        </div>
-
-                        {showDropdown && (
-                            <div
-                                ref={dropdownRef}
-                                className="absolute left-4 right-4 top-full mt-1 bg-white rounded-2xl shadow-2xl overflow-hidden z-50"
-                                style={{ border: "1px solid #ede8e1", maxHeight: 380 }}
-                            >
-                                {suggestions.length === 0 && !searchLoading ? (
-                                    <div className="px-4 py-6 text-center">
-                                        <FiSearch size={22} className="mx-auto mb-2 text-gray-300" />
-                                        <p className="text-xs text-gray-400">No results for "{searchQuery}"</p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="px-4 py-2 flex items-center justify-between"
-                                            style={{ background: "#fdf9f4", borderBottom: "1px solid #f0ebe4" }}>
-                                            <span className="text-[10px] font-bold uppercase tracking-widest"
-                                                style={{ color: "#b8a090" }}>
-                                                Suggestions
-                                            </span>
-                                            <button
-                                                className="text-[10px] font-semibold"
-                                                style={{ color: "#d97706" }}
-                                                onClick={() => handleSearchSubmit()}
-                                            >
-                                                See all results →
-                                            </button>
-                                        </div>
-
-                                        {/* List */}
-                                        <ul className="overflow-y-auto" style={{ maxHeight: 320 }}>
-                                            {suggestions.map((product, idx) => (
-                                                <li
-                                                    key={product.id}
-                                                    onClick={() => handleSuggestionClick(product)}
-                                                    className="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors"
-                                                    style={{
-                                                        background: activeSuggestion === idx ? "#fef3c7" : "transparent",
-                                                        borderBottom: "1px solid #f7f4ef",
-                                                    }}
-                                                    onMouseEnter={() => setActiveSuggestion(idx)}
-                                                    onMouseLeave={() => setActiveSuggestion(-1)}
-                                                >
-                                                    <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0"
-                                                        style={{ background: "#f0ebe4", border: "1px solid #e8e3db" }}>
-                                                        {product.image ? (
-                                                            <img
-                                                                src={product.image}
-                                                                alt={product.title}
-                                                                className="w-full h-full object-cover"
-                                                                onError={(e) => {
-                                                                    e.currentTarget.style.display = "none";
-                                                                }}
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center">
-                                                                <GiMedicines size={16} style={{ color: "#b8a090" }} />
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="flex-1 min-w-0">
-                                                        <HighlightedText
-                                                            text={product.title}
-                                                            query={searchQuery}
-                                                        />
-                                                        <p className="text-[10px] mt-0.5" style={{ color: "#b8a090" }}>
-                                                            #{product.unique_code}
-                                                        </p>
-                                                    </div>
-
-                                                    <FiSearch size={12} style={{ color: "#d4c5b4" }} className="shrink-0" />
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </>
-                                )}
-                            </div>
+                        {/* Spinner */}
+                        {searchLoading && (
+                            <div style={{
+                                width: 18, height: 18, borderRadius: "50%",
+                                border: "2px solid #fde68a", borderTopColor: "#f59e0b",
+                                animation: "spin 0.7s linear infinite",
+                                marginRight: 10, flexShrink: 0,
+                            }} />
                         )}
+
+                        {/* Search button */}
+                        <button
+                            onClick={() => handleSearchSubmit()}
+                            style={{
+                                padding: "0 18px",
+                                height: 46,
+                                background: "#f59e0b",
+                                color: "#fff",
+                                border: "none",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                fontSize: 13,
+                                fontWeight: 700,
+                                fontFamily: "'Georgia', serif",
+                                flexShrink: 0,
+                                transition: "background 0.2s",
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = "#d97706"}
+                            onMouseLeave={e => e.currentTarget.style.background = "#f59e0b"}
+                        >
+                            <FiSearch size={15} />
+                            <span className="hidden sm:inline">Search</span>
+                        </button>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                        <button onClick={() => navigate("/cart")} className="p-2 rounded-full hover:bg-gray-100">
-                            <FiShoppingCart size={22} />
-                        </button>
-                        <button onClick={() => navigate("/liked-products")} className="p-2 rounded-full hover:bg-gray-100">
-                            <FiHeart size={22} />
-                        </button>
-                        <button onClick={() => navigate("/profile")} className="p-2 rounded-full hover:bg-gray-100">
-                            <FiUser size={22} />
-                        </button>
-                    </div>
-                </div>
-            </header>
+                    {/* Dropdown */}
+                    {showDropdown && (
+                        <div
+                            ref={dropdownRef}
+                            style={{
+                                position: "absolute",
+                                top: "calc(100% + 6px)",
+                                left: 0,
+                                right: 0,
+                                background: "#fff",
+                                border: "1px solid #e5e7eb",
+                                borderRadius: 10,
+                                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                                zIndex: 100,
+                                overflow: "hidden",
+                            }}
+                        >
+                            {suggestions.length === 0 && !searchLoading ? (
+                                <div style={{ padding: "16px", textAlign: "center", fontSize: 14, color: "#9ca3af" }}>
+                                    No results for "<strong>{searchQuery}</strong>"
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Dropdown header */}
+                                    <div style={{
+                                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                                        padding: "10px 16px", borderBottom: "1px solid #f3f4f6", background: "#fafafa",
+                                    }}>
+                                        <span style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                                            Suggestions
+                                        </span>
+                                        <button
+                                            onClick={() => handleSearchSubmit()}
+                                            style={{ fontSize: 12, color: "#f59e0b", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                                        >
+                                            See all results →
+                                        </button>
+                                    </div>
 
-            {open && (
-                <div className="fixed inset-0 z-50">
-                    <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-                    <aside className="absolute left-0 top-0 h-full w-72 bg-white shadow-xl p-6 overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold">Menu</h2>
-                            <button onClick={() => setOpen(false)}><FiX size={22} /></button>
-                        </div>
+                                    {/* Suggestion list */}
+                                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                                        {suggestions.map((product, idx) => (
+                                            <li
+                                                key={product.unique_code || idx}
+                                                onClick={() => handleSuggestionClick(product)}
+                                                onMouseEnter={() => setActiveSuggestion(idx)}
+                                                onMouseLeave={() => setActiveSuggestion(-1)}
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 12,
+                                                    padding: "10px 16px",
+                                                    cursor: "pointer",
+                                                    background: activeSuggestion === idx ? "#fffbeb" : "#fff",
+                                                    borderBottom: "1px solid #f9fafb",
+                                                    transition: "background 0.15s",
+                                                }}
+                                            >
+                                                {/* Thumbnail */}
+                                                <div style={{
+                                                    width: 40, height: 40, borderRadius: 8,
+                                                    overflow: "hidden", background: "#fef3c7",
+                                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                                    flexShrink: 0, border: "1px solid #fde68a",
+                                                }}>
+                                                    {product.image ? (
+                                                        <img
+                                                            src={product.image}
+                                                            alt={product.title}
+                                                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                            onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                                        />
+                                                    ) : (
+                                                        <GiMedicines style={{ color: "#f59e0b", fontSize: 18 }} />
+                                                    )}
+                                                </div>
 
-                        <button onClick={() => goTo("/")} className="w-full flex items-center gap-3 py-2 font-medium hover:text-amber-600">
-                            <FiHome size={18} /> Home
-                        </button>
-                        <button onClick={() => goTo("/track-order")} className="w-full flex items-center gap-3 py-2 font-medium hover:text-amber-600">
-                            <FiMapPin size={18} /> Track Order
-                        </button>
+                                                {/* Text */}
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <p style={{ fontSize: 13, fontWeight: 500, color: "#111827", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                                        <HighlightedText text={product.title} query={searchQuery} />
+                                                    </p>
+                                                    <p style={{ fontSize: 11, color: "#9ca3af", margin: "2px 0 0" }}>
+                                                        #{product.unique_code}
+                                                    </p>
+                                                </div>
 
-                        <hr className="my-4" />
-                        <h3 className="text-gray-500 text-sm mb-3">Categories</h3>
-
-                        <ul className="space-y-3">
-                            {loading && <li className="text-gray-400 text-sm">Loading categories...</li>}
-                            {!loading && categories.map((cat) => (
-                                <li
-                                    key={cat.category_id}
-                                    onClick={() => goTo(`/category/${cat.category_id}/${cat.category_slug}`)}
-                                    className="flex items-center gap-3 cursor-pointer hover:text-amber-600"
-                                >
-                                    <GiMedicines size={18} />
-                                    {cat.category_name}
-                                </li>
-                            ))}
-                            {!loading && categories.length === 0 && (
-                                <li className="text-gray-400 text-sm">No categories found</li>
+                                                {/* Arrow */}
+                                                <span style={{ color: "#d1d5db", fontSize: 16, flexShrink: 0 }}>›</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
                             )}
-                        </ul>
-                    </aside>
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
 
-            <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin { animation: spin 0.7s linear infinite; }
-      `}</style>
-        </>
+            {/* ── Desktop Nav (hidden on mobile) ── */}
+            <DesktopNav pathname={pathname} navigate={navigate} isActive={isActive} />
+
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </header>
     );
 };
 
-/* ── Highlight matched text in suggestion ── */
+const DesktopNav = ({ navigate, isActive }) => (
+    <div
+        className="hidden sm:block"
+        style={{ borderTop: "1px solid #f3f0ea", background: "#fffcf5" }}
+    >
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px" }}>
+            <nav style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                {NAV_LINKS.map(({ label, path }) => {
+                    const active = isActive(path);
+                    return (
+                        <button
+                            key={label}
+                            onClick={() => navigate(path)}
+                            style={{
+                                position: "relative",
+                                padding: "10px 18px",
+                                fontSize: 13,
+                                fontWeight: active ? 700 : 500,
+                                color: active ? "#d97706" : "#57534e",
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                fontFamily: "'Georgia', serif",
+                                transition: "color 0.2s",
+                                letterSpacing: "0.01em",
+                            }}
+                            onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#d97706"; }}
+                            onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#57534e"; }}
+                        >
+                            {label}
+                            {active && (
+                                <span style={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    width: "55%",
+                                    height: 2,
+                                    background: "#d97706",
+                                    borderRadius: 9999,
+                                }} />
+                            )}
+                        </button>
+                    );
+                })}
+            </nav>
+        </div>
+    </div>
+);
+
 const HighlightedText = ({ text, query }) => {
-    if (!query) return <span className="text-sm font-medium" style={{ color: "#2e1f0e" }}>{text}</span>;
+    if (!query) return <span>{text}</span>;
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
     const parts = text.split(regex);
     return (
-        <span className="text-sm font-medium truncate block" style={{ color: "#2e1f0e" }}>
+        <span>
             {parts.map((part, i) =>
-                regex.test(part) ? (
-                    <mark key={i} style={{ background: "#fef08a", color: "#92400e", borderRadius: 3, padding: "0 1px" }}>
-                        {part}
-                    </mark>
-                ) : (
-                    <span key={i}>{part}</span>
-                )
+                regex.test(part)
+                    ? <mark key={i} style={{ background: "#fef3c7", color: "#92400e", borderRadius: 3, padding: "0 2px" }}>{part}</mark>
+                    : <span key={i}>{part}</span>
             )}
         </span>
     );
