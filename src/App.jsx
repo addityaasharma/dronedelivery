@@ -13,6 +13,7 @@ import CheckoutPage from "./pages/user/product/CheckoutPage";
 import CollectionPage from "./pages/user/dashboard/CollectionPage";
 import MainLayout from "./layers/MainLayout";
 import OrderPage from "./pages/user/product/OrderPage";
+import SearchResults from "./pages/user/product/SearchResults";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/category/:id/:slug" element={<CategoryProducts />} />
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/product/:unique_code/:slug" element={<ProductDetails />} />
         <Route path="/liked-products" element={<LikedProducts />} />
         <Route path="/cart" element={<CartPage />} />

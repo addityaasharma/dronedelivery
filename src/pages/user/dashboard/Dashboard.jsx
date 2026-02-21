@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Package, Tag, Sparkles } from "lucide-react";
+import { GiMedicines } from "react-icons/gi";
 
 const ProductPlaceholder = ({ title }) => {
     const hue = [...(title || "X")].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
@@ -26,6 +27,16 @@ const CollectionPlaceholder = ({ name }) => {
     );
 };
 
+const CategoryIcon = ({ name }) => {
+    const hue = [...(name || "C")].reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+    return (
+        <div className="w-full h-full flex items-center justify-center"
+            style={{ background: `linear-gradient(135deg, hsl(${hue},35%,88%), hsl(${hue},45%,78%))` }}>
+            <GiMedicines size={22} style={{ color: `hsl(${hue},50%,38%)` }} />
+        </div>
+    );
+};
+
 const Shimmer = ({ className, style }) => (
     <div className={`shimmer rounded-2xl ${className}`} style={style} />
 );
@@ -47,7 +58,6 @@ const ProductCard = ({ product, onClick }) => {
             className="group bg-white rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
             style={{ border: "1px solid #ede8e1" }}
         >
-            {/* Image */}
             <div className="relative aspect-square overflow-hidden bg-gray-50">
                 {hasImage ? (
                     <img
@@ -63,7 +73,6 @@ const ProductCard = ({ product, onClick }) => {
                 <div className="w-full h-full" style={{ display: hasImage ? "none" : "flex" }}>
                     <ProductPlaceholder title={title} />
                 </div>
-
                 {discount !== null && discount > 0 && (
                     <span className="absolute top-2 left-2 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: "#16a34a" }}>
@@ -72,13 +81,11 @@ const ProductCard = ({ product, onClick }) => {
                 )}
             </div>
 
-            {/* Info */}
             <div className="p-3">
                 <h3 className="text-sm font-semibold leading-tight line-clamp-2 mb-1 group-hover:text-amber-700 transition-colors"
                     style={{ color: "#2e1f0e", fontFamily: "'Georgia', serif" }}>
                     {title}
                 </h3>
-
                 <div className="flex items-end justify-between mt-1">
                     <div>
                         <span className="font-bold text-base" style={{ color: "#d97706" }}>
@@ -107,11 +114,13 @@ const Dashboard = () => {
 
     const [banners, setBanners] = useState([]);
     const [collections, setCollections] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [products, setProducts] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const [loadingBanners, setLoadingBanners] = useState(true);
     const [loadingCollections, setLoadingCollections] = useState(true);
+    const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingProducts, setLoadingProducts] = useState(true);
 
     /* ── Fetch banners ── */
@@ -148,6 +157,23 @@ const Dashboard = () => {
         load();
     }, []);
 
+    /* ── Fetch categories (same API as Header.jsx) ── */
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const cached = sessionStorage.getItem("categories");
+                if (cached) { setCategories(JSON.parse(cached)); return; }
+                const res = await fetch("https://no-wheels-1.onrender.com/user/category");
+                const data = await res.json();
+                if (res.ok) {
+                    setCategories(data.categories || []);
+                    sessionStorage.setItem("categories", JSON.stringify(data.categories || []));
+                }
+            } finally { setLoadingCategories(false); }
+        };
+        load();
+    }, []);
+
     /* ── Fetch products (ALWAYS FRESH) ── */
     useEffect(() => {
         const load = async () => {
@@ -155,10 +181,7 @@ const Dashboard = () => {
             try {
                 const res = await fetch(
                     "https://no-wheels-1.onrender.com/user/product?limit=12",
-                    {
-                        credentials: "include",
-                        cache: "no-store",
-                    }
+                    { credentials: "include", cache: "no-store" }
                 );
                 const data = await res.json();
                 const feed = data.data || data.products || data || [];
@@ -202,6 +225,10 @@ const Dashboard = () => {
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
+        .category-card:hover .category-icon-wrap {
+          transform: scale(1.08);
+          box-shadow: 0 4px 16px rgba(217,119,6,0.18);
+        }
       `}</style>
 
             <main className="max-w-2xl mx-auto px-3 py-4 space-y-6">
@@ -230,7 +257,6 @@ const Dashboard = () => {
                                     </a>
                                 ))}
                             </div>
-
                             {banners.length > 1 && (
                                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
                                     {banners.map((_, idx) => (
@@ -260,7 +286,6 @@ const Dashboard = () => {
                     <h2 className="text-base font-bold mb-3" style={{ color: "#2e1f0e", letterSpacing: "0.01em" }}>
                         Shop by Collection
                     </h2>
-
                     <div className="flex gap-4 overflow-x-auto pb-1 hide-scrollbar">
                         {loadingCollections
                             ? Array.from({ length: 6 }).map((_, i) => (
@@ -300,7 +325,6 @@ const Dashboard = () => {
                                                 <CollectionPlaceholder name={col.name} />
                                             </div>
                                         </div>
-
                                         <span
                                             className="text-center text-[11px] font-semibold leading-tight"
                                             style={{
@@ -317,6 +341,73 @@ const Dashboard = () => {
                                     </button>
                                 );
                             })}
+                    </div>
+                </section>
+
+                {/* ══ CATEGORIES ══ */}
+                <section>
+                    <h2 className="text-base font-bold mb-3" style={{ color: "#2e1f0e", letterSpacing: "0.01em" }}>
+                        Shop by Category
+                    </h2>
+                    <div className="flex gap-4 overflow-x-auto pb-1 hide-scrollbar">
+                        {loadingCategories
+                            ? Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="shrink-0 flex flex-col items-center gap-2">
+                                    <div className="w-16 h-16 rounded-2xl shimmer" />
+                                    <div className="w-14 h-2.5 rounded shimmer" />
+                                </div>
+                            ))
+                            : categories.length === 0 ? (
+                                <p className="text-sm" style={{ color: "#b8a090" }}>No categories found</p>
+                            ) : (
+                                categories.map((cat) => (
+                                    <button
+                                        key={cat.category_id}
+                                        onClick={() => navigate(`/category/${cat.category_id}/${cat.category_slug}`)}
+                                        className="category-card shrink-0 flex flex-col items-center gap-1.5 group"
+                                        style={{ minWidth: 72 }}
+                                    >
+                                        <div
+                                            className="category-icon-wrap w-16 h-16 rounded-2xl overflow-hidden transition-all duration-300"
+                                            style={{
+                                                border: "2px solid #e8dfd5",
+                                                boxShadow: "0 2px 8px rgba(180,140,100,0.12)",
+                                            }}
+                                        >
+                                            {cat.category_image ? (
+                                                <img
+                                                    src={cat.category_image}
+                                                    alt={cat.category_name}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = "none";
+                                                        e.currentTarget.nextSibling.style.display = "flex";
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <div
+                                                className="w-full h-full"
+                                                style={{ display: cat.category_image ? "none" : "flex" }}
+                                            >
+                                                <CategoryIcon name={cat.category_name} />
+                                            </div>
+                                        </div>
+                                        <span
+                                            className="text-center text-[11px] font-semibold leading-tight transition-colors group-hover:text-amber-700"
+                                            style={{
+                                                color: "#4a3728",
+                                                maxWidth: 68,
+                                                display: "-webkit-box",
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: "vertical",
+                                                overflow: "hidden",
+                                            }}
+                                        >
+                                            {cat.category_name}
+                                        </span>
+                                    </button>
+                                ))
+                            )}
                     </div>
                 </section>
 
