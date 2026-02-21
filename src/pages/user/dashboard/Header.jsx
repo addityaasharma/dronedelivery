@@ -121,13 +121,12 @@ const Header = () => {
                 style={{
                     maxWidth: 1200,
                     margin: "0 auto",
-                    padding: "14px 20px",
+                    padding: "5px 5px",
                     display: "flex",
                     alignItems: "center",
                     gap: 20,
                 }}
             >
-                {/* Logo */}
                 <div
                     onClick={() => navigate("/")}
                     style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flexShrink: 0 }}
@@ -138,9 +137,7 @@ const Header = () => {
                     </span>
                 </div>
 
-                {/* Search Bar */}
                 <div style={{ flex: 1, position: "relative" }} ref={searchRef}>
-                    {/* Input row */}
                     <div style={{
                         display: "flex",
                         alignItems: "center",
@@ -161,10 +158,6 @@ const Header = () => {
                             e.currentTarget.style.background = "#f9fafb";
                         }}
                     >
-                        {/* Search icon */}
-                        {/* <FiSearch style={{ marginLeft: 14, color: "#9ca3af", fontSize: 16, flexShrink: 0, pointerEvents: "none" }} /> */}
-
-                        {/* Input */}
                         <input
                             type="text"
                             placeholder="Search medicines, health products..."
@@ -184,7 +177,6 @@ const Header = () => {
                             }}
                         />
 
-                        {/* Spinner */}
                         {searchLoading && (
                             <div style={{
                                 width: 18, height: 18, borderRadius: "50%",
@@ -194,11 +186,10 @@ const Header = () => {
                             }} />
                         )}
 
-                        {/* Search button */}
                         <button
                             onClick={() => handleSearchSubmit()}
                             style={{
-                                padding: "0 18px",
+                                padding: "0 15px",
                                 height: 46,
                                 background: "#f59e0b",
                                 color: "#fff",
