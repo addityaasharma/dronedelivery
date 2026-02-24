@@ -49,6 +49,7 @@ const Login = () => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
+                mode: "cors",
                 body: JSON.stringify(payload),
             });
 
@@ -58,7 +59,9 @@ const Login = () => {
                 throw new Error(data.message || "Something went wrong");
             }
 
-            navigate("/");
+            setTimeout(() => {
+                navigate("/");
+            }, 500);
         } catch (err) {
             setError(err.message);
         } finally {

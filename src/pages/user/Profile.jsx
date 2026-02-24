@@ -6,63 +6,57 @@ import {
 } from "lucide-react";
 
 const Avatar = ({ first, last }) => {
-    const initials =
-        `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
+    const initials = `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
     return (
-        <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg"
-            style={{
-                background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                color: "#fff",
-                fontFamily: "'Georgia', serif",
-                letterSpacing: "0.05em",
-            }}
-        >
+        <div style={{
+            width: 64, height: 64, borderRadius: "50%",
+            background: "#111", color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 20, fontWeight: 600, letterSpacing: "0.04em",
+            fontFamily: "'DM Sans', sans-serif",
+        }}>
             {initials}
         </div>
     );
 };
 
 const FieldRow = ({ icon: Icon, label, type = "text", value, editMode, onChange, multiline }) => {
-    const base = {
-        fontFamily: "'Georgia', serif",
-        fontSize: 14,
-        color: "#3a2e22",
-        background: "transparent",
-        outline: "none",
-        width: "100%",
-        resize: "none",
-        transition: "all 0.2s",
-    };
-
     return (
-        <div
-            className="flex items-start gap-3 px-4 py-3 rounded-2xl transition-all duration-200"
-            style={{
-                background: editMode ? "#fffbf5" : "transparent",
-                border: editMode ? "1.5px solid #f59e0b" : "1.5px solid transparent",
-            }}
-        >
-            <div
-                className="mt-0.5 shrink-0 w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: "#fef3c7" }}
-            >
-                <Icon size={15} style={{ color: "#d97706" }} />
+        <div style={{
+            padding: "16px 0",
+            borderBottom: "1px solid #f0f0f0",
+            display: "flex", gap: 16, alignItems: "flex-start",
+        }}>
+            <div style={{
+                width: 36, height: 36, borderRadius: 8,
+                background: editMode ? "#f5f5f5" : "#fafafa",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0, marginTop: 2,
+                transition: "background 0.2s",
+            }}>
+                <Icon size={14} color={editMode ? "#111" : "#aaa"} />
             </div>
-
-            <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold mb-0.5" style={{ color: "#b8a090", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <div style={{ flex: 1 }}>
+                <p style={{
+                    fontSize: 10, fontWeight: 600, letterSpacing: "0.1em",
+                    textTransform: "uppercase", color: "#aaa", marginBottom: 4,
+                    fontFamily: "'DM Sans', sans-serif",
+                }}>
                     {label}
                 </p>
-
                 {multiline ? (
                     <textarea
-                        rows={3}
+                        rows={2}
                         disabled={!editMode}
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        style={{ ...base, opacity: editMode ? 1 : 0.7 }}
-                        placeholder={`Enter ${label.toLowerCase()}`}
+                        placeholder={`Add ${label.toLowerCase()}`}
+                        style={{
+                            width: "100%", resize: "none", border: "none", outline: "none",
+                            background: "transparent", fontSize: 14, color: "#111",
+                            fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5,
+                            opacity: editMode ? 1 : 1, padding: 0,
+                        }}
                     />
                 ) : (
                     <input
@@ -70,8 +64,12 @@ const FieldRow = ({ icon: Icon, label, type = "text", value, editMode, onChange,
                         disabled={!editMode}
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        style={{ ...base, opacity: editMode ? 1 : 0.7 }}
-                        placeholder={`Enter ${label.toLowerCase()}`}
+                        placeholder={`Add ${label.toLowerCase()}`}
+                        style={{
+                            width: "100%", border: "none", outline: "none",
+                            background: "transparent", fontSize: 14, color: "#111",
+                            fontFamily: "'DM Sans', sans-serif", padding: 0,
+                        }}
                     />
                 )}
             </div>
@@ -84,13 +82,8 @@ const Profile = () => {
     const fetchedOnce = useRef(false);
 
     const [profile, setProfile] = useState({
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        address: "",
+        first_name: "", last_name: "", email: "", phone: "", address: "",
     });
-
     const [snapshot, setSnapshot] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -102,53 +95,36 @@ const Profile = () => {
     useEffect(() => {
         if (fetchedOnce.current) return;
         fetchedOnce.current = true;
-
         const fetchProfile = async () => {
             try {
                 const res = await fetch("https://no-wheels-1.onrender.com/user/profile", {
-                    method: "GET",
-                    credentials: "include",
+                    method: "GET", credentials: "include",
                 });
-
-                if (res.status === 401 || res.status === 403) {
-                    navigate("/login", { replace: true });
-                    return;
-                }
-
+                if (res.status === 401 || res.status === 403) { navigate("/login", { replace: true }); return; }
                 const data = await res.json();
                 if (res.ok && data.data) setProfile(data.data);
-            } catch {
-                navigate("/login", { replace: true });
-            } finally {
-                setLoading(false);
-            }
+            } catch { navigate("/login", { replace: true }); }
+            finally { setLoading(false); }
         };
-
         fetchProfile();
     }, [navigate]);
 
-    const updateField = (key, value) =>
-        setProfile((prev) => ({ ...prev, [key]: value }));
+    const updateField = (key, value) => setProfile((prev) => ({ ...prev, [key]: value }));
 
     const startEdit = () => {
         setSnapshot({ ...profile });
         setEditMode(true);
-        setMessage("");
-        setError("");
+        setMessage(""); setError("");
     };
 
     const cancelEdit = () => {
         if (snapshot) setProfile(snapshot);
-        setEditMode(false);
-        setError("");
+        setEditMode(false); setError("");
     };
 
     const handleSave = async () => {
         try {
-            setSaving(true);
-            setError("");
-            setMessage("");
-
+            setSaving(true); setError(""); setMessage("");
             const res = await fetch("https://no-wheels-1.onrender.com/user/profile", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -156,344 +132,179 @@ const Profile = () => {
                 body: JSON.stringify(profile),
             });
             const data = await res.json();
-
             if (!res.ok) throw new Error(data.message || "Update failed");
-
-            setMessage("Profile updated successfully");
-            setEditMode(false);
-            setSnapshot(null);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setSaving(false);
-        }
+            setMessage("Changes saved"); setEditMode(false); setSnapshot(null);
+        } catch (err) { setError(err.message); }
+        finally { setSaving(false); }
     };
 
     const handleLogout = async () => {
         setLoggingOut(true);
         try {
-            const res = await fetch("https://no-wheels-1.onrender.com/user/logout", {
-                method: "POST",
-                credentials: "include",
-            });
-            if (res.status === 401) {
-                navigate("/login", { replace: true });
-                return;
-            }
-        } catch {
-            // Network error – still redirect
-        } finally {
-            setLoggingOut(false);
-        }
+            await fetch("https://no-wheels-1.onrender.com/user/logout", { method: "POST", credentials: "include" });
+        } catch { }
+        finally { setLoggingOut(false); }
         navigate("/login", { replace: true });
     };
 
-    const fullName =
-        [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
-        "Your Name";
+    const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || "Your Name";
 
     return (
-        <div
-            className="min-h-screen"
-            style={{ background: "#f7f4ef", fontFamily: "'Georgia', serif" }}
-        >
-            <div className="px-4 pt-4">
-                <div className="max-w-lg mx-auto flex items-center justify-between">
-                    <button
-                        onClick={() => navigate("/")}
-                        className="flex items-center gap-1.5 text-sm transition-colors"
-                        style={{ color: "#b8a090" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#d97706")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#b8a090")}
-                    >
-                        <ArrowLeft size={16} />
-                        Back
-                    </button>
+        <>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                input::placeholder, textarea::placeholder { color: #ccc; }
+                input:disabled, textarea:disabled { cursor: default; }
+                input:focus, textarea:focus { outline: none; }
+                .btn-ghost { background: none; border: none; cursor: pointer; }
+                .btn-ghost:hover { opacity: 0.6; }
+                .pulse { animation: pulse 1.5s ease-in-out infinite; }
+                @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+                .spin { animation: spin 0.7s linear infinite; }
+                @keyframes spin { to{transform:rotate(360deg)} }
+            `}</style>
 
-                    <button
-                        onClick={handleLogout}
-                        disabled={loggingOut}
-                        className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-xl transition-all duration-200"
-                        style={{
-                            background: loggingOut ? "#fde68a" : "#fff5f5",
-                            color: loggingOut ? "#b45309" : "#dc2626",
-                            border: "1px solid",
-                            borderColor: loggingOut ? "#fde68a" : "#fecaca",
-                            fontFamily: "'Georgia', serif",
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!loggingOut) {
-                                e.currentTarget.style.background = "#fee2e2";
-                                e.currentTarget.style.borderColor = "#fca5a5";
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!loggingOut) {
-                                e.currentTarget.style.background = "#fff5f5";
-                                e.currentTarget.style.borderColor = "#fecaca";
-                            }
-                        }}
-                    >
-                        {loggingOut ? (
-                            <>
-                                <Loader2 size={14} className="animate-spin" />
-                                Signing out…
-                            </>
-                        ) : (
-                            <>
-                                <LogOut size={14} />
-                                Sign out
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
+            <div style={{
+                minHeight: "100vh", background: "#fff",
+                fontFamily: "'DM Sans', sans-serif", color: "#111",
+            }}>
+                <div style={{ maxWidth: 480, margin: "0 auto", padding: "40px 24px 80px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 40 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                            {loading ? (
+                                <div className="pulse" style={{ width: 64, height: 64, borderRadius: "50%", background: "#f0f0f0" }} />
+                            ) : (
+                                <Avatar first={profile.first_name} last={profile.last_name} />
+                            )}
+                            <div>
+                                {loading ? (
+                                    <>
+                                        <div className="pulse" style={{ width: 120, height: 16, background: "#f0f0f0", borderRadius: 4, marginBottom: 8 }} />
+                                        <div className="pulse" style={{ width: 160, height: 12, background: "#f0f0f0", borderRadius: 4 }} />
+                                    </>
+                                ) : (
+                                    <>
+                                        <p style={{ fontWeight: 600, fontSize: 16 }}>{fullName}</p>
+                                        {profile.email && <p style={{ fontSize: 13, color: "#888", marginTop: 2 }}>{profile.email}</p>}
+                                    </>
+                                )}
+                            </div>
+                        </div>
 
-            <div className="max-w-lg mx-auto px-4 pt-6 pb-16">
-
-                <div
-                    className="rounded-3xl overflow-hidden mb-4 shadow-sm"
-                    style={{ background: "#fff", border: "1px solid #ede8e1" }}
-                >
-                    <div
-                        className="h-28 relative"
-                        style={{
-                            background: "linear-gradient(135deg, #fde68a 0%, #fbbf24 50%, #f59e0b 100%)",
-                        }}
-                    >
-                        <div className="absolute top-3 right-3 flex gap-2">
-                            {editMode ? (
-                                <>
+                        {!loading && (
+                            editMode ? (
+                                <div style={{ display: "flex", gap: 8 }}>
                                     <button
                                         onClick={cancelEdit}
-                                        className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-colors"
-                                        style={{ background: "rgba(255,255,255,0.9)" }}
+                                        style={{
+                                            width: 34, height: 34, borderRadius: "50%",
+                                            border: "1px solid #e8e8e8", background: "#fff",
+                                            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                                        }}
                                     >
-                                        <X size={15} style={{ color: "#ef4444" }} />
+                                        <X size={13} color="#888" />
                                     </button>
                                     <button
                                         onClick={handleSave}
                                         disabled={saving}
-                                        className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-colors"
-                                        style={{ background: saving ? "#fde68a" : "rgba(255,255,255,0.9)" }}
+                                        style={{
+                                            width: 34, height: 34, borderRadius: "50%",
+                                            border: "none", background: "#111",
+                                            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                                        }}
                                     >
                                         {saving
-                                            ? <Loader2 size={15} style={{ color: "#d97706" }} className="animate-spin" />
-                                            : <Check size={15} style={{ color: "#16a34a" }} />
+                                            ? <Loader2 size={13} color="#fff" className="spin" />
+                                            : <Check size={13} color="#fff" />
                                         }
                                     </button>
-                                </>
+                                </div>
                             ) : (
                                 <button
                                     onClick={startEdit}
-                                    className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-colors"
-                                    style={{ background: "rgba(255,255,255,0.9)" }}
+                                    style={{
+                                        display: "flex", alignItems: "center", gap: 6,
+                                        fontSize: 12, fontWeight: 500, color: "#111",
+                                        background: "none", border: "1px solid #e8e8e8",
+                                        borderRadius: 20, padding: "6px 14px", cursor: "pointer",
+                                        fontFamily: "'DM Sans', sans-serif",
+                                    }}
                                 >
-                                    <Pencil size={14} style={{ color: "#d97706" }} />
+                                    <Pencil size={11} /> Edit
                                 </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="px-6 pb-5">
-                        <div className="-mt-10 mb-3">
-                            {loading ? (
-                                <div className="w-20 h-20 rounded-full bg-amber-100 animate-pulse shadow-lg" />
-                            ) : (
-                                <Avatar first={profile.first_name} last={profile.last_name} />
-                            )}
-                        </div>
-
-                        {loading ? (
-                            <div className="space-y-2">
-                                <div className="h-5 bg-gray-100 rounded-lg w-40 animate-pulse" />
-                                <div className="h-3 bg-gray-100 rounded w-24 animate-pulse" />
-                            </div>
-                        ) : (
-                            <>
-                                <h2 className="text-xl font-bold" style={{ color: "#2e1f0e" }}>
-                                    {fullName}
-                                </h2>
-                                {profile.email && (
-                                    <p className="text-sm mt-0.5" style={{ color: "#b8a090" }}>
-                                        {profile.email}
-                                    </p>
-                                )}
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                <div
-                    className="rounded-3xl overflow-hidden shadow-sm"
-                    style={{ background: "#fff", border: "1px solid #ede8e1" }}
-                >
-                    <div className="px-5 pt-5 pb-2 flex items-center justify-between">
-                        <p className="text-xs font-bold tracking-widest uppercase" style={{ color: "#b8a090" }}>
-                            Personal Details
-                        </p>
-                        {editMode && (
-                            <span
-                                className="text-xs px-2 py-0.5 rounded-full"
-                                style={{ background: "#fef3c7", color: "#b45309" }}
-                            >
-                                Editing
-                            </span>
+                            )
                         )}
                     </div>
 
-                    <div className="px-3 pb-4 space-y-1">
-                        <FieldRow
-                            icon={User}
-                            label="First Name"
-                            value={profile.first_name}
-                            editMode={editMode}
-                            onChange={(v) => updateField("first_name", v)}
-                        />
-                        <FieldRow
-                            icon={User}
-                            label="Last Name"
-                            value={profile.last_name}
-                            editMode={editMode}
-                            onChange={(v) => updateField("last_name", v)}
-                        />
-                        <FieldRow
-                            icon={Mail}
-                            label="Email"
-                            type="email"
-                            value={profile.email}
-                            editMode={editMode}
-                            onChange={(v) => updateField("email", v)}
-                        />
-                        <FieldRow
-                            icon={Phone}
-                            label="Phone"
-                            type="tel"
-                            value={profile.phone}
-                            editMode={editMode}
-                            onChange={(v) => updateField("phone", v)}
-                        />
-                        <FieldRow
-                            icon={MapPin}
-                            label="Address"
-                            value={profile.address}
-                            editMode={editMode}
-                            onChange={(v) => updateField("address", v)}
-                            multiline
-                        />
+                    <p style={{
+                        fontSize: 10, fontWeight: 600, letterSpacing: "0.1em",
+                        textTransform: "uppercase", color: "#aaa", marginBottom: 4,
+                    }}>
+                        Personal Information
+                    </p>
+
+                    <div style={{ borderTop: "1px solid #f0f0f0" }}>
+                        <FieldRow icon={User} label="First Name" value={profile.first_name} editMode={editMode} onChange={(v) => updateField("first_name", v)} />
+                        <FieldRow icon={User} label="Last Name" value={profile.last_name} editMode={editMode} onChange={(v) => updateField("last_name", v)} />
+                        <FieldRow icon={Mail} label="Email" type="email" value={profile.email} editMode={editMode} onChange={(v) => updateField("email", v)} />
+                        <FieldRow icon={Phone} label="Phone" type="tel" value={profile.phone} editMode={editMode} onChange={(v) => updateField("phone", v)} />
+                        <FieldRow icon={MapPin} label="Address" value={profile.address} editMode={editMode} onChange={(v) => updateField("address", v)} multiline />
                     </div>
 
-                    {/* Feedback messages */}
                     {(error || message) && (
-                        <div className="px-5 pb-5">
+                        <div style={{ marginTop: 20 }}>
                             {error && (
-                                <div
-                                    className="px-4 py-2.5 rounded-xl text-sm"
-                                    style={{ background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca" }}
-                                >
-                                    ⚠ {error}
-                                </div>
+                                <p style={{ fontSize: 13, color: "#c0392b", padding: "12px 16px", background: "#fdf3f2", borderRadius: 8 }}>
+                                    {error}
+                                </p>
                             )}
                             {message && (
-                                <div
-                                    className="px-4 py-2.5 rounded-xl text-sm"
-                                    style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}
-                                >
-                                    ✓ {message}
-                                </div>
+                                <p style={{ fontSize: 13, color: "#27ae60", padding: "12px 16px", background: "#f2fdf4", borderRadius: 8 }}>
+                                    {message}
+                                </p>
                             )}
                         </div>
                     )}
 
                     {editMode && (
-                        <div className="px-5 pb-5">
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="w-full py-3 rounded-2xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                                style={{
-                                    background: saving
-                                        ? "#fde68a"
-                                        : "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                                    color: "#fff",
-                                    fontFamily: "inherit",
-                                    letterSpacing: "0.02em",
-                                    boxShadow: saving ? "none" : "0 4px 12px rgba(217,119,6,0.3)",
-                                }}
-                            >
-                                {saving ? (
-                                    <>
-                                        <Loader2 size={15} className="animate-spin" />
-                                        Saving…
-                                    </>
-                                ) : (
-                                    <>
-                                        <Check size={15} />
-                                        Save Changes
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            style={{
+                                marginTop: 28, width: "100%", height: 48,
+                                background: saving ? "#555" : "#111",
+                                color: "#fff", border: "none", borderRadius: 10,
+                                fontSize: 14, fontWeight: 500, cursor: "pointer",
+                                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                                fontFamily: "'DM Sans', sans-serif",
+                                transition: "background 0.2s",
+                            }}
+                        >
+                            {saving ? <><Loader2 size={15} className="spin" /> Saving…</> : "Save Changes"}
+                        </button>
                     )}
-                </div>
 
-                <div className="mt-4">
-                    <button
-                        onClick={handleLogout}
-                        disabled={loggingOut}
-                        className="w-full py-3 rounded-2xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                        style={{
-                            background: "#fff",
-                            color: loggingOut ? "#b45309" : "#dc2626",
-                            border: "1px solid",
-                            borderColor: loggingOut ? "#fde68a" : "#fecaca",
-                            fontFamily: "'Georgia', serif",
-                            letterSpacing: "0.02em",
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!loggingOut) {
-                                e.currentTarget.style.background = "#fff5f5";
-                                e.currentTarget.style.borderColor = "#fca5a5";
+                    <div style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid #f0f0f0" }}>
+                        <button
+                            onClick={handleLogout}
+                            disabled={loggingOut}
+                            style={{
+                                background: "none", border: "none", cursor: "pointer",
+                                fontSize: 13, color: "#c0392b", display: "flex",
+                                alignItems: "center", gap: 6, fontFamily: "'DM Sans', sans-serif",
+                                opacity: loggingOut ? 0.5 : 1, padding: 0,
+                            }}
+                        >
+                            {loggingOut
+                                ? <><Loader2 size={13} className="spin" /> Signing out…</>
+                                : <><LogOut size={13} /> Sign out of account</>
                             }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!loggingOut) {
-                                e.currentTarget.style.background = "#fff";
-                                e.currentTarget.style.borderColor = "#fecaca";
-                            }
-                        }}
-                    >
-                        {loggingOut ? (
-                            <>
-                                <Loader2 size={15} className="animate-spin" />
-                                Signing out…
-                            </>
-                        ) : (
-                            <>
-                                <LogOut size={15} />
-                                Sign Out
-                            </>
-                        )}
-                    </button>
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin { animation: spin 0.8s linear infinite; }
-        .animate-pulse {
-          animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        input:focus, textarea:focus { outline: none; }
-        input::placeholder, textarea::placeholder { color: #d4c5b4; }
-      `}</style>
-        </div>
+        </>
     );
 };
 

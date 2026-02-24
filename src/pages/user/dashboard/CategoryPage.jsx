@@ -3,13 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { GiMedicines, GiPill, GiHeartBeats, GiDrop } from "react-icons/gi";
 import { FiSearch, FiArrowRight, FiGrid } from "react-icons/fi";
 
-/* ════════════════════════════════════════
-   ✏️  COLUMN CONFIG — change these anytime
-   ════════════════════════════════════════ */
-const COLS_MOBILE = 3;   // columns on phones  (<640px)
-const COLS_TABLET = 4;   // columns on tablets (640–1024px)
-const COLS_DESKTOP = 5;   // columns on desktop (>1024px)
-/* ════════════════════════════════════════ */
+const COLS_MOBILE = 3;   // columns on phones
+const COLS_TABLET = 4;   // columns on tablets 
+const COLS_DESKTOP = 5;   // columns on desktop
 
 const FALLBACK_ICONS = [GiMedicines, GiPill, GiHeartBeats, GiDrop];
 
@@ -73,7 +69,6 @@ const CategoryPage = () => {
             background: "linear-gradient(135deg, #fffbf0 0%, #fdf6e3 50%, #fff9f0 100%)",
             fontFamily: "'Palatino Linotype', 'Book Antiqua', Palatino, serif",
         }}>
-            {/* ── Responsive grid injection ── */}
             <style>{`
                 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
                 .cat-grid {
@@ -89,7 +84,6 @@ const CategoryPage = () => {
                 }
             `}</style>
 
-            {/* ── Hero ── */}
             <div style={{
                 background: "linear-gradient(135deg, #1a1209 0%, #2d1f0e 60%, #3b2a12 100%)",
                 padding: "2.5rem 1.5rem 3rem",
@@ -100,14 +94,12 @@ const CategoryPage = () => {
                 <div style={{ position: "absolute", bottom: "-40px", left: "10%", width: "140px", height: "140px", borderRadius: "50%", background: "rgba(245,158,11,0.05)", pointerEvents: "none" }} />
 
                 <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative" }}>
-                    {/* Breadcrumb */}
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.25rem" }}>
                         <span onClick={() => navigate("/")} style={{ color: "#f59e0b", fontSize: "13px", cursor: "pointer", opacity: 0.8 }}>Home</span>
                         <FiArrowRight style={{ color: "#f59e0b", opacity: 0.5, fontSize: "12px" }} />
                         <span style={{ color: "#f5f0e8", fontSize: "13px", opacity: 0.6 }}>Categories</span>
                     </div>
 
-                    {/* Title */}
                     <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "0.5rem" }}>
                         <div style={{ background: "rgba(245,158,11,0.15)", borderRadius: "10px", padding: "8px", border: "1px solid rgba(245,158,11,0.25)" }}>
                             <FiGrid style={{ color: "#f59e0b", fontSize: "20px" }} />
@@ -120,7 +112,6 @@ const CategoryPage = () => {
                         Browse our complete range of health &amp; wellness categories
                     </p>
 
-                    {/* Search */}
                     <div style={{ position: "relative", maxWidth: "420px" }}>
                         <FiSearch style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#f59e0b", fontSize: "15px" }} />
                         <input
@@ -143,7 +134,6 @@ const CategoryPage = () => {
                 </div>
             </div>
 
-            {/* ── Main Content ── */}
             <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "1.75rem 1rem 3rem" }}>
 
                 {!loading && (
@@ -152,7 +142,6 @@ const CategoryPage = () => {
                     </p>
                 )}
 
-                {/* Skeleton */}
                 {loading && (
                     <div className="cat-grid">
                         {Array.from({ length: 12 }).map((_, i) => (
@@ -166,7 +155,6 @@ const CategoryPage = () => {
                     </div>
                 )}
 
-                {/* Cards */}
                 {!loading && filtered.length > 0 && (
                     <div className="cat-grid">
                         {filtered.map((cat, idx) => {
@@ -187,7 +175,6 @@ const CategoryPage = () => {
                     </div>
                 )}
 
-                {/* Empty */}
                 {!loading && filtered.length === 0 && (
                     <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
                         <GiMedicines style={{ fontSize: "3.5rem", color: "#d4b896", marginBottom: "1rem" }} />
@@ -207,7 +194,6 @@ const CategoryPage = () => {
     );
 };
 
-/* ── Category Card ── */
 const CategoryCard = ({ cat, idx, palette, visible, onClick }) => {
     const [hovered, setHovered] = useState(false);
     const [imgErr, setImgErr] = useState(false);
@@ -239,7 +225,6 @@ const CategoryCard = ({ cat, idx, palette, visible, onClick }) => {
                 overflow: "hidden",
             }}
         >
-            {/* Top accent line */}
             <div style={{
                 position: "absolute", top: 0, left: 0, right: 0, height: "2.5px",
                 background: hovered ? palette.accent : "transparent",
@@ -247,7 +232,6 @@ const CategoryCard = ({ cat, idx, palette, visible, onClick }) => {
                 borderRadius: "12px 12px 0 0",
             }} />
 
-            {/* Image / Icon */}
             <div style={{
                 width: "56px", height: "56px", borderRadius: "12px",
                 background: palette.bg,
@@ -270,7 +254,6 @@ const CategoryCard = ({ cat, idx, palette, visible, onClick }) => {
                 )}
             </div>
 
-            {/* Name */}
             <p style={{
                 margin: 0,
                 fontSize: "12px",

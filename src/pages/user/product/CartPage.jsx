@@ -39,7 +39,10 @@ const CartPage = () => {
             }
         };
 
-        fetchCart();
+        const timer = setTimeout(() => {
+            fetchCart();
+        }, 300); // small delay helps Safari
+        return () => clearTimeout(timer);
     }, []);
 
     // =========================
