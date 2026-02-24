@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, ShoppingBag, Trash2, Star } from "lucide-react";
+import { backend_api } from "../../../api";
 
 const LikedProducts = () => {
     const navigate = useNavigate();
@@ -10,7 +11,7 @@ const LikedProducts = () => {
     useEffect(() => {
         const fetchLiked = async () => {
             try {
-                const res = await fetch("https://no-wheels-1.onrender.com/user/liked_product", {
+                const res = await fetch(`${backend_api}/user/liked_product`, {
                     credentials: "include",
                 });
                 if (res.status === 401) { navigate("/login", { replace: true }); return; }

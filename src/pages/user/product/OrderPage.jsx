@@ -15,6 +15,7 @@ import {
     X,
     LogIn
 } from "lucide-react";
+import { backend_api } from "../../../api";
 
 const formatTime = (date) =>
     date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
@@ -131,7 +132,7 @@ const OrderPage = () => {
         try {
             for (const item of items) {
                 const res = await fetch(
-                    `https://no-wheels-1.onrender.com/user/order/${item.product_id}`,
+                    `${backend_api}/user/order/${item.product_id}`,
                     {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },

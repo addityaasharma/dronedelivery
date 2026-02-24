@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Package, Tag, Layers } from "lucide-react";
+import { backend_api } from "../../../api";
 
 /* ─────────────────────────────────────────────
    PRODUCT IMAGE PLACEHOLDER
@@ -139,7 +140,7 @@ const CollectionPage = () => {
                     return;
                 }
 
-                const res = await fetch(`https://no-wheels-1.onrender.com/user/collection/${id}`);
+                const res = await fetch(`${backend_api}/user/collection/${id}`);
                 const raw = await res.json();
                 const data = Array.isArray(raw) ? raw[0] : raw;
 

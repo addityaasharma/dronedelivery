@@ -13,6 +13,7 @@ import {
     AlertCircle,
     ChevronRight,
 } from "lucide-react";
+import { backend_api } from "../../../api";
 
 const STATUS_CONFIG = {
     PLACED: { label: "Order Placed", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200", icon: Package },
@@ -71,7 +72,7 @@ const TrackOrder = () => {
         const fetchOrders = async () => {
             try {
                 const res = await fetch(
-                    "https://no-wheels-1.onrender.com/user/order",
+                    `${backend_api}/user/order`,
                     { credentials: "include" }
                 );
 
@@ -102,7 +103,7 @@ const TrackOrder = () => {
         setDetailLoading(order_id);
         try {
             const res = await fetch(
-                `https://no-wheels-1.onrender.com/user/order/${order_id}`,
+                `${backend_api}/user/order/${order_id}`,
                 { credentials: "include" }
             );
 
@@ -128,7 +129,7 @@ const TrackOrder = () => {
         setCancelling(order_id);
         try {
             const res = await fetch(
-                `https://no-wheels-1.onrender.com/user/order/${order_id}`,
+                `${backend_api}/user/order/${order_id}`,
                 { method: "PUT", credentials: "include" }
             );
 

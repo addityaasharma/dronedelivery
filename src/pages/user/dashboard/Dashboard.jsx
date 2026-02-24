@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Package, Zap, Shield, Clock, Truck, Star, ChevronRight, Gift } from "lucide-react";
 import { GiMedicines } from "react-icons/gi";
+import { backend_api } from "../../../api";
 
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
@@ -271,7 +272,7 @@ const Dashboard = () => {
             try {
                 const c = sessionStorage.getItem("home_banners");
                 if (c) { setBanners(JSON.parse(c)); return; }
-                const r = await fetch("https://no-wheels-1.onrender.com/user/banner");
+                const r = await fetch(`${backend_api}/user/banner`);
                 const d = await r.json();
                 if (r.ok) { setBanners(d.data || []); sessionStorage.setItem("home_banners", JSON.stringify(d.data || [])); }
             } finally { setLBanners(false); }
@@ -283,7 +284,7 @@ const Dashboard = () => {
             try {
                 const c = sessionStorage.getItem("home_collections");
                 if (c) { setCollections(JSON.parse(c)); return; }
-                const r = await fetch("https://no-wheels-1.onrender.com/user/collection");
+                const r = await fetch(`${backend_api}/user/collection`);
                 const d = await r.json();
                 if (r.ok) { setCollections(d.result || []); sessionStorage.setItem("home_collections", JSON.stringify(d.result || [])); }
             } finally { setLCollections(false); }
@@ -295,7 +296,7 @@ const Dashboard = () => {
             try {
                 const c = sessionStorage.getItem("categories");
                 if (c) { setCategories(JSON.parse(c)); return; }
-                const r = await fetch("https://no-wheels-1.onrender.com/user/category");
+                const r = await fetch(`${backend_api}/user/category`);
                 const d = await r.json();
                 if (r.ok) { setCategories(d.categories || []); sessionStorage.setItem("categories", JSON.stringify(d.categories || [])); }
             } finally { setLCategories(false); }
@@ -306,7 +307,7 @@ const Dashboard = () => {
         (async () => {
             setLProducts(true);
             try {
-                const r = await fetch("https://no-wheels-1.onrender.com/user/product?limit=12", { credentials: "include", cache: "no-store" });
+                const r = await fetch(`${backend_api}/user/product?limit=12`, { credentials: "include", cache: "no-store" });
                 const d = await r.json();
                 setProducts(d.data || d.products || d || []);
             } finally { setLProducts(false); }

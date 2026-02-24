@@ -15,6 +15,7 @@ import {
     X,
     LogIn
 } from "lucide-react";
+import { backend_api } from "../../../api";
 
 // ─── Login Popup ───────────────────────────────────────────────────────────────
 const LoginPopup = ({ onClose, onLogin }) => (
@@ -111,7 +112,7 @@ const ProductDetails = () => {
 
                 // Fetch by unique_code — API: /user/product/:unique_code
                 const res = await fetch(
-                    `https://no-wheels-1.onrender.com/user/product/${unique_code}`,
+                    `${backend_api}/user/product/${unique_code}`,
                     { credentials: "include" }
                 );
 
@@ -133,7 +134,7 @@ const ProductDetails = () => {
 
                 // Suggested products — fetched by product_id
                 const sugRes = await fetch(
-                    `https://no-wheels-1.onrender.com/user/product/${productData.product_id}/suggested?limit=10`
+                    `${backend_api}/user/product/${productData.product_id}/suggested?limit=10`
                 );
                 const sugData = await sugRes.json();
 
@@ -169,7 +170,7 @@ const ProductDetails = () => {
             setLiked(newState);
 
             const res = await fetch(
-                `https://no-wheels-1.onrender.com/user/liked_product/${productId}`,
+                `${backend_api}/user/liked_product/${productId}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -197,7 +198,7 @@ const ProductDetails = () => {
             setCartLoading(true);
 
             const res = await fetch(
-                `https://no-wheels-1.onrender.com/user/cart/${productId}`,
+                `${backend_api}/user/cart/${productId}`,
                 { method: "POST", credentials: "include" }
             );
 
@@ -234,7 +235,7 @@ const ProductDetails = () => {
         try {
             setBuyLoading(true);
 
-            const res = await fetch("https://no-wheels-1.onrender.com/user/profile", {
+            const res = await fetch(`${backend_api}/user/profile`, {
                 method: "GET",
                 credentials: "include",
             });

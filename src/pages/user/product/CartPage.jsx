@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { backend_api } from "../../../api";
 
 const CartPage = () => {
     const navigate = useNavigate();
@@ -16,7 +17,7 @@ const CartPage = () => {
         const fetchCart = async () => {
             try {
                 const res = await fetch(
-                    "https://no-wheels-1.onrender.com/user/cart",
+                    `${backend_api}/user/cart`,
                     { credentials: "include" }
                 );
 
@@ -51,7 +52,7 @@ const CartPage = () => {
     const updateCart = async (product_id, action) => {
         try {
             const res = await fetch(
-                `https://no-wheels-1.onrender.com/user/cart/${product_id}`,
+                `${backend_api}/user/cart/${product_id}`,
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
@@ -100,7 +101,7 @@ const CartPage = () => {
     const removeFromCart = async (product_id) => {
         try {
             const res = await fetch(
-                `https://no-wheels-1.onrender.com/user/cart/${product_id}`,
+                `${backend_api}/user/cart/${product_id}`,
                 {
                     method: "DELETE",
                     credentials: "include",

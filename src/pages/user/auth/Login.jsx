@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { backend_api } from "../../../api";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -34,8 +35,8 @@ const Login = () => {
             setError("");
 
             const url = isSignup
-                ? "https://no-wheels-1.onrender.com/user/signup"
-                : "https://no-wheels-1.onrender.com/user/login";
+                ? `${backend_api}/user/signup`
+                : `${backend_api}/user/login`;
 
             const payload = isSignup
                 ? {

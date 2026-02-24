@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GiMedicines, GiPill, GiHeartBeats, GiDrop } from "react-icons/gi";
 import { FiSearch, FiArrowRight, FiGrid } from "react-icons/fi";
+import { backend_api } from "../../../api";
 
 const COLS_MOBILE = 3;   // columns on phones
 const COLS_TABLET = 4;   // columns on tablets 
@@ -37,7 +38,7 @@ const CategoryPage = () => {
         }
         const fetchCategories = async () => {
             try {
-                const res = await fetch("https://no-wheels-1.onrender.com/user/category");
+                const res = await fetch(`${backend_api}/user/category`);
                 const data = await res.json();
                 if (res.ok) {
                     setCategories(data.categories || []);

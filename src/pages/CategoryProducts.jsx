@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, SlidersHorizontal, Package, Tag, ChevronDown } from "lucide-react";
+import { backend_api } from "../api";
 
 /* ─────────────────────────────────────────────
    PLACEHOLDER when product_images is null
@@ -170,7 +171,7 @@ const CategoryProducts = () => {
                 setError("");
 
                 const res = await fetch(
-                    `https://no-wheels-1.onrender.com/user/category/${id}?page=${targetPage}&sort_by=${sortBy}&search=${search}`
+                    `${backend_api}/user/category/${id}?page=${targetPage}&sort_by=${sortBy}&search=${search}`
                 );
                 const data = await res.json();
 

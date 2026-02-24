@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
 import { GiMedicines } from "react-icons/gi";
+import { backend_api } from "../../../api";
 
 const NAV_LINKS = [
     { label: "Home", path: "/" },
@@ -32,7 +33,7 @@ const Header = () => {
         setSearchLoading(true);
         try {
             const res = await fetch(
-                `https://no-wheels-1.onrender.com/user/suggestion?name=${encodeURIComponent(query)}`
+                `${backend_api}/user/suggestion?name=${encodeURIComponent(query)}`
             );
             const data = await res.json();
             if (res.ok) {
