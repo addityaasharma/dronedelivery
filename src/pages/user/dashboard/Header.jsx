@@ -6,7 +6,7 @@ import { backend_api } from "../../../api";
 
 const NAV_LINKS = [
     { label: "Home", path: "/" },
-    { label: "Categories", path: "/categories" },
+    { label: "Categories", path: "/category" },
     { label: "Cart", path: "/cart" },
     { label: "Wishlist", path: "/liked-products" },
     { label: "Profile", path: "/profile" },
