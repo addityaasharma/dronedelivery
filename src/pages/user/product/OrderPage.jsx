@@ -175,6 +175,8 @@ const OrderPage = () => {
     };
 
     const placeOrder = async () => {
+        if (placing) return;
+
         if (!addressSaved) { setAddressOpen(true); return; }
         setPlacing(true);
         try {
@@ -260,7 +262,7 @@ const OrderPage = () => {
                         {deliveryType === "express" ? formatTime(expressTime) : formatDate(sameDay)}
                     </p>
                     <div className="flex flex-col gap-3">
-                        <button onClick={() => navigate("/orders")} className="w-full bg-gray-900 text-white font-bold py-3.5 rounded-2xl text-sm hover:bg-gray-800 transition-colors">
+                        <button onClick={() => navigate("/track-order")} className="w-full bg-gray-900 text-white font-bold py-3.5 rounded-2xl text-sm hover:bg-gray-800 transition-colors">
                             Track Order
                         </button>
                         <button onClick={() => navigate("/")} className="w-full bg-amber-400 hover:bg-amber-500 font-bold py-3.5 rounded-2xl text-sm transition-colors">
@@ -307,8 +309,8 @@ const OrderPage = () => {
                             onClick={() => setDeliveryType("sameday")}
                             icon={Truck}
                             label="Same Day"
-                            sublabel={subtotal >= 499 ? "FREE delivery" : `By midnight · ₹40`}
-                            badge={subtotal >= 499 ? "FREE" : null}
+                            sublabel="FREE delivery · By midnight"
+                            badge="FREE"
                             badgeColor="bg-green-100 text-green-700"
                         />
                     </div>

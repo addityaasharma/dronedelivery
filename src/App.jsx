@@ -1,6 +1,5 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-
 import Login from "./pages/user/auth/Login";
 import Dashboard from "./pages/user/dashboard/Dashboard";
 import TrackOrder from "./pages/user/dashboard/TrackOrder";
