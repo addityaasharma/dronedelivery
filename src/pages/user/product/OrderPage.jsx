@@ -201,7 +201,16 @@ const OrderPage = () => {
                 body: JSON.stringify({ payment_id: orderData.payment_id }),
             });
 
-            const paymentData = await payRes.json();
+            let paymentData;
+
+            try {
+                paymentData = await payRes.json();
+            } catch {
+                const text = await payRes.text();
+                console.error("Server returned HTML:", text);
+                alert("Payment server error. Check backend logs.");
+                return;
+            }
             if (paymentData.status !== "success") { alert("Payment initiation failed. Please try again."); setPlacing(false); return; }
 
             const options = {
