@@ -146,7 +146,7 @@ const OrderPage = () => {
     if (!items.length) { navigate("/"); return null; }
 
     const subtotal = items.reduce((sum, i) => sum + (i.price ?? i.product_price ?? 0) * (i.quantity || 1), 0);
-    const deliveryFee = deliveryType === "express" ? 29 : subtotal >= 499 ? 0 : 40;
+    const deliveryFee = deliveryType === "express" ? 29 : 0;
     const total = subtotal + deliveryFee;
 
     const expressTime = new Date(Date.now() + 20 * 60 * 1000);
