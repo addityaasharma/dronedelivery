@@ -328,7 +328,7 @@ const Dashboard = () => {
         <div style={{ minHeight: "100vh", background: "#f0f2f2", fontFamily: "'Lato', sans-serif" }}>
             <style>{GLOBAL_CSS}</style>
 
-            <main style={{ maxWidth: 1200, margin: "0 auto" }}>
+            <main style={{ width: "100%", padding: "0 2px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 
                     {lBanners ? (
