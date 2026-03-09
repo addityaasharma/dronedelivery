@@ -1,275 +1,352 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     MapPin,
-    Clock,
     Zap,
-    CreditCard,
     CheckCircle2,
     ChevronDown,
     ChevronUp,
-    Edit2,
     Truck,
     ShieldCheck,
     Package,
     X,
-    LogIn
+    LogIn,
+    Clock,
+    CreditCard,
+    AlertCircle,
+    Loader2,
 } from "lucide-react";
+
 import { backend_api } from "../../../api";
 
+/* ─── Helpers ─── */
 const formatTime = (date) =>
     date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
-
 const formatDate = (date) =>
     date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
 
-// ─── Login Popup ───────────────────────────────────────────────────────────────
+/* ─── Load Razorpay script once ─── */
+function useRazorpay() {
+    const loaded = useRef(false);
+    useEffect(() => {
+        if (loaded.current || document.querySelector('script[src*="razorpay"]')) {
+            loaded.current = true;
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        script.onload = () => { loaded.current = true; };
+        document.body.appendChild(script);
+    }, []);
+}
+
+/* ─── Field Component ─── */
+const Field = ({ label, name, placeholder, value, onChange, error, type = "text" }) => (
+    <div className="flex flex-col gap-1">
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</label>
+        <input
+            type={type}
+            name={name}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            className={`w-full px-4 py-3 rounded-xl border-2 bg-gray-50 text-sm font-medium transition-all outline-none
+        focus:bg-white focus:border-amber-400
+        ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+        />
+        {error && (
+            <p className="text-xs text-red-500 flex items-center gap-1">
+                <AlertCircle size={12} /> {error}
+            </p>
+        )}
+    </div>
+);
+
+/* ─── Login Popup ─── */
 const LoginPopup = ({ onClose, onLogin }) => (
-    <div
-        className="fixed inset-0 z-50 flex items-center justify-center px-4"
-        style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)" }}
-    >
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative">
-            <button
-                onClick={onClose}
-                className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
-            >
-                <X size={18} className="text-gray-500" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.5)" }}>
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 relative animate-in fade-in zoom-in duration-200">
+            <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-1.5 rounded-full transition-colors">
+                <X size={18} />
             </button>
-
-            <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                    <LogIn size={26} className="text-amber-500" />
+            <div className="text-center">
+                <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                    <LogIn size={28} className="text-amber-500" />
                 </div>
-
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Please Login</h2>
-                <p className="text-sm text-gray-500 mb-6">
-                    You need to be logged in to place an order. It only takes a moment!
+                <h2 className="text-xl font-bold mb-2 text-gray-900">Login Required</h2>
+                <p className="text-gray-500 text-sm mb-7 leading-relaxed">
+                    You need to be logged in to place an order and track your delivery.
                 </p>
-
                 <button
                     onClick={onLogin}
-                    className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 rounded-full transition-colors shadow-sm mb-3"
+                    className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3.5 rounded-2xl mb-3 transition-colors text-sm"
                 >
                     Go to Login
                 </button>
-
-                <button
-                    onClick={onClose}
-                    className="w-full text-sm text-gray-500 hover:text-gray-700 py-2 transition-colors"
-                >
-                    Continue Browsing
+                <button onClick={onClose} className="text-gray-400 text-sm hover:text-gray-600 transition-colors">
+                    Continue browsing
                 </button>
             </div>
         </div>
     </div>
 );
 
+/* ─── Delivery Option Card ─── */
+const DeliveryCard = ({ selected, onClick, icon: Icon, label, sublabel, badge, badgeColor }) => (
+    <button
+        onClick={onClick}
+        className={`flex-1 flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left
+      ${selected ? "border-amber-400 bg-amber-50" : "border-gray-200 bg-gray-50 hover:border-gray-300"}`}
+    >
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0
+      ${selected ? "bg-amber-400" : "bg-white border border-gray-200"}`}>
+            <Icon size={18} className={selected ? "text-gray-900" : "text-gray-500"} />
+        </div>
+        <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-bold text-gray-900">{label}</p>
+                {badge && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}`}>
+                        {badge}
+                    </span>
+                )}
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">{sublabel}</p>
+        </div>
+        <div className={`w-4 h-4 rounded-full border-2 shrink-0 transition-all
+      ${selected ? "border-amber-400 bg-amber-400" : "border-gray-300"}`}>
+            {selected && <div className="w-full h-full rounded-full scale-50 bg-white" />}
+        </div>
+    </button>
+);
+
+/* ─── Main OrderPage ─── */
 const OrderPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { cartItems = [], singleProduct = null } = location.state || {};
-    const [deliveryType, setDeliveryType] = useState("express");
-    const [address, setAddress] = useState({
-        name: "", phone: "", pincode: "", street: "", city: "", state: "",
-    });
-    const [addressOpen, setAddressOpen] = useState(true);
-    const [addressSaved, setAddressSaved] = useState(false);
-    const [upiId, setUpiId] = useState("");
-    const [upiError, setUpiError] = useState("");
-    const [placing, setPlacing] = useState(false);
-    const [placed, setPlaced] = useState(false);
-    const [showLoginPopup, setShowLoginPopup] = useState(false);
+    useRazorpay();
 
+    const { cartItems = [], singleProduct = null } = location.state || {};
     const items = singleProduct
         ? [{ ...singleProduct, quantity: singleProduct.quantity || 1 }]
         : cartItems;
 
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: "instant" });
-    }, []);
+    const [deliveryType, setDeliveryType] = useState("express");
+    const [address, setAddress] = useState({ name: "", phone: "", pincode: "", street: "", city: "", state: "" });
+    const [errors, setErrors] = useState({});
+    const [addressSaved, setAddressSaved] = useState(false);
+    const [addressOpen, setAddressOpen] = useState(true);
+    const [placing, setPlacing] = useState(false);
+    const [placed, setPlaced] = useState(false);
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
 
-    if (items.length === 0) {
-        navigate("/");
-        return null;
-    }
+    useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
 
-    const subtotal = items.reduce((s, i) => {
-        const price = i.price ?? i.product_price ?? 0;
-        return s + price * (i.quantity || 1);
-    }, 0);
-    const deliveryFee = deliveryType === "express" ? 29 : (subtotal >= 499 ? 0 : 40);
+    if (!items.length) { navigate("/"); return null; }
+
+    const subtotal = items.reduce((sum, i) => sum + (i.price ?? i.product_price ?? 0) * (i.quantity || 1), 0);
+    const deliveryFee = deliveryType === "express" ? 29 : subtotal >= 499 ? 0 : 40;
     const total = subtotal + deliveryFee;
 
-    const express20 = new Date(Date.now() + 20 * 60 * 1000);
+    const expressTime = new Date(Date.now() + 20 * 60 * 1000);
     const sameDay = new Date();
     sameDay.setHours(23, 59, 0, 0);
 
-    const handleAddressChange = (e) =>
-        setAddress((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleChange = (e) => {
+        setAddress((p) => ({ ...p, [e.target.name]: e.target.value }));
+        if (errors[e.target.name]) setErrors((p) => ({ ...p, [e.target.name]: "" }));
+    };
+
+    const validate = () => {
+        const rules = { name: "Full name required", phone: "Phone number required", street: "Street address required", city: "City required", state: "State required", pincode: "Pincode required" };
+        const newErrors = {};
+        Object.entries(rules).forEach(([key, msg]) => { if (!address[key].trim()) newErrors[key] = msg; });
+        if (address.phone && !/^\d{10}$/.test(address.phone.trim())) newErrors.phone = "Enter a valid 10-digit phone number";
+        if (address.pincode && !/^\d{6}$/.test(address.pincode.trim())) newErrors.pincode = "Enter a valid 6-digit pincode";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const saveAddress = () => {
-        const { name, phone, pincode, street, city, state } = address;
-        if (!name || !phone || !pincode || !street || !city || !state) {
-            alert("Please fill all address fields.");
-            return;
-        }
+        if (!validate()) return;
         setAddressSaved(true);
         setAddressOpen(false);
     };
 
-    const validateUpi = (val) => {
-        setUpiId(val);
-        const upiRegex = /^[\w.\-_]{3,}@[a-zA-Z]{3,}$/;
-        setUpiError(val && !upiRegex.test(val) ? "Enter a valid UPI ID (e.g. name@upi)" : "");
-    };
-
     const placeOrder = async () => {
-        if (!addressSaved) { alert("Please save your delivery address first."); return; }
-        if (!upiId || upiError) { alert("Please enter a valid UPI ID."); return; }
-
+        if (!addressSaved) { setAddressOpen(true); return; }
         setPlacing(true);
         try {
-            for (const item of items) {
-                const res = await fetch(
-                    `${backend_api}/user/order/${item.product_id}`,
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({
-                            quantity: item.quantity || 1,
-                            provided_address: `${address.street}, ${address.city}, ${address.state} - ${address.pincode}`,
-                            provided_pincode: address.pincode,
-                        }),
-                    }
-                );
+            const orderRes = await fetch(`${backend_api}/user/order`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    address: `${address.street}, ${address.city}, ${address.state}`,
+                    pincode: address.pincode,
+                    items: items.map((i) => ({ product_id: i.product_id, quantity: i.quantity || 1 })),
+                }),
+            });
 
-                if (res.status === 401) {
-                    setShowLoginPopup(true);
-                    return;
+            if (orderRes.status === 401) { setShowLoginPopup(true); setPlacing(false); return; }
+
+            const orderData = await orderRes.json();
+            if (orderData.status !== "success") { alert("Failed to create order. Please try again."); setPlacing(false); return; }
+
+            const payRes = await fetch(`${backend_api}/user/payment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ payment_id: orderData.payment_id }),
+            });
+
+            const paymentData = await payRes.json();
+            if (paymentData.status !== "success") { alert("Payment initiation failed. Please try again."); setPlacing(false); return; }
+
+            const options = {
+                key: paymentData.key,
+                amount: paymentData.amount,
+                currency: paymentData.currency,
+                name: "Drone Store",
+                description: "Order Payment",
+                order_id: paymentData.razorpay_order_id,
+
+                prefill: {
+                    name: address.name,
+                    contact: address.phone
+                },
+
+                handler: () => {
+                    setPlaced(true);
+                },
+                modal: {
+                    ondismiss: () => setPlacing(false)
+                },
+                theme: {
+                    color: "#f59e0b"
                 }
-            }
-            setPlaced(true);
-        } finally {
+            };
+
+            const razorpay = new window.Razorpay(options);
+            razorpay.open();
+        } catch (err) {
+            console.error(err);
+            alert("Something went wrong. Please try again.");
             setPlacing(false);
         }
     };
 
+    /* ── Success ── */
     if (placed) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-                <div className="bg-white rounded-2xl border border-gray-200 p-10 max-w-sm w-full text-center shadow-sm">
-                    <div className="flex items-center justify-center mb-6">
-                        <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center">
-                            <CheckCircle2 size={56} className="text-green-500" strokeWidth={1.5} />
-                        </div>
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-amber-50 to-orange-50 px-4">
+                <div className="bg-white rounded-3xl p-10 text-center shadow-xl max-w-sm w-full">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                        <CheckCircle2 size={52} className="text-green-500" />
                     </div>
-
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Placed!</h2>
-                    <p className="text-gray-600 text-sm mb-6">
-                        Your order has been confirmed and will arrive{" "}
-                        <span className="font-semibold text-gray-900">
-                            {deliveryType === "express"
-                                ? `by ${formatTime(express20)} today`
-                                : `by 11:59 PM · ${formatDate(sameDay)}`}
-                        </span>
-                        .
+                    <h2 className="text-2xl font-bold mb-2 text-gray-900">Order Placed! 🎉</h2>
+                    <p className="text-gray-500 mb-1 text-sm">Expected delivery</p>
+                    <p className="text-gray-900 font-bold text-lg mb-8">
+                        {deliveryType === "express" ? formatTime(expressTime) : formatDate(sameDay)}
                     </p>
-
-                    <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left space-y-2 border border-gray-100">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Package size={16} className="text-green-600" />
-                            <span>{items.length} {items.length === 1 ? "item" : "items"} ordered</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <MapPin size={16} className="text-green-600" />
-                            <span className="truncate">{address.street}, {address.city}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                            <CreditCard size={16} className="text-green-600" />
-                            <span>₹{total.toLocaleString()} via UPI</span>
-                        </div>
+                    <div className="flex flex-col gap-3">
+                        <button onClick={() => navigate("/orders")} className="w-full bg-gray-900 text-white font-bold py-3.5 rounded-2xl text-sm hover:bg-gray-800 transition-colors">
+                            Track Order
+                        </button>
+                        <button onClick={() => navigate("/")} className="w-full bg-amber-400 hover:bg-amber-500 font-bold py-3.5 rounded-2xl text-sm transition-colors">
+                            Continue Shopping
+                        </button>
                     </div>
-
-                    <button
-                        onClick={() => navigate("/")}
-                        className="w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-3 rounded-xl transition-colors"
-                    >
-                        Continue Shopping
-                    </button>
                 </div>
             </div>
         );
     }
 
+    /* ── Main UI ── */
     return (
         <div className="min-h-screen bg-gray-50">
-
             {showLoginPopup && (
-                <LoginPopup
-                    onClose={() => setShowLoginPopup(false)}
-                    onLogin={() => navigate("/login")}
-                />
+                <LoginPopup onClose={() => setShowLoginPopup(false)} onLogin={() => navigate("/login")} />
             )}
 
-            <div className="max-w-5xl mx-auto px-3 py-4 space-y-3">
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="max-w-2xl mx-auto py-6 px-4 space-y-4 pb-32">
+
+                {/* Header */}
+                <div className="flex items-center gap-3 pb-1">
+                    <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full bg-white border hover:bg-gray-50 transition-colors">
+                        <ChevronDown size={18} className="rotate-90" />
+                    </button>
+                    <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
+                </div>
+
+                {/* ── DELIVERY TYPE ── */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-4">
+                    <p className="text-sm font-bold text-gray-700 mb-3">Delivery Option</p>
+                    <div className="flex gap-3">
+                        <DeliveryCard
+                            selected={deliveryType === "express"}
+                            onClick={() => setDeliveryType("express")}
+                            icon={Zap}
+                            label="Express"
+                            sublabel={`By ${formatTime(expressTime)} · ₹29`}
+                            badge="20 min"
+                            badgeColor="bg-amber-100 text-amber-700"
+                        />
+                        <DeliveryCard
+                            selected={deliveryType === "sameday"}
+                            onClick={() => setDeliveryType("sameday")}
+                            icon={Truck}
+                            label="Same Day"
+                            sublabel={subtotal >= 499 ? "FREE delivery" : `By midnight · ₹40`}
+                            badge={subtotal >= 499 ? "FREE" : null}
+                            badgeColor="bg-green-100 text-green-700"
+                        />
+                    </div>
+                </div>
+
+                {/* ── ADDRESS ── */}
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                     <button
-                        className="w-full flex items-center justify-between p-4"
-                        onClick={() => setAddressOpen((o) => !o)}
+                        onClick={() => setAddressOpen(!addressOpen)}
+                        className="flex justify-between items-center w-full p-4 hover:bg-gray-50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${addressSaved ? "bg-green-500 text-white" : "bg-amber-400 text-gray-900"}`}>
-                                {addressSaved ? <CheckCircle2 size={15} /> : "1"}
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold transition-colors
+                ${addressSaved ? "bg-green-500 text-white" : "bg-amber-400 text-gray-900"}`}>
+                                {addressSaved ? <CheckCircle2 size={16} /> : <MapPin size={16} />}
                             </div>
                             <div className="text-left">
-                                <p className="font-bold text-gray-900 text-sm">Delivery Address</p>
+                                <p className="font-bold text-sm text-gray-900">Delivery Address</p>
                                 {addressSaved && !addressOpen && (
-                                    <p className="text-xs text-gray-500 mt-0.5 truncate max-w-xs">
-                                        {address.name} · {address.street}, {address.city}
-                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5">{address.name} · {address.street}, {address.city}</p>
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2">
                             {addressSaved && (
-                                <span className="text-xs text-amber-600 font-semibold flex items-center gap-1">
-                                    <Edit2 size={12} /> Edit
-                                </span>
+                                <span className="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">Edit</span>
                             )}
-                            {addressOpen
-                                ? <ChevronUp size={18} className="text-gray-400" />
-                                : <ChevronDown size={18} className="text-gray-400" />}
+                            {addressOpen ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
                         </div>
                     </button>
 
                     {addressOpen && (
-                        <div className="px-4 pb-4 border-t border-gray-100">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                                {[
-                                    { name: "name", label: "Full Name", placeholder: "John Doe", span: 1 },
-                                    { name: "phone", label: "Phone Number", placeholder: "10-digit number", span: 1 },
-                                    { name: "street", label: "Street / Area", placeholder: "House no, Street", span: 2 },
-                                    { name: "pincode", label: "Pincode", placeholder: "6-digit pincode", span: 1 },
-                                    { name: "city", label: "City", placeholder: "Mumbai", span: 1 },
-                                    { name: "state", label: "State", placeholder: "Maharashtra", span: 1 },
-                                ].map((f) => (
-                                    <div key={f.name} className={f.span === 2 ? "sm:col-span-2" : ""}>
-                                        <label className="block text-xs font-semibold text-gray-700 mb-1">{f.label}</label>
-                                        <input
-                                            name={f.name}
-                                            value={address[f.name]}
-                                            onChange={handleAddressChange}
-                                            placeholder={f.placeholder}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
-                                        />
-                                    </div>
-                                ))}
+                        <div className="p-4 border-t border-gray-100 space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                                <Field label="Full Name" name="name" placeholder="John Doe" value={address.name} onChange={handleChange} error={errors.name} />
+                                <Field label="Phone" name="phone" placeholder="10-digit number" value={address.phone} onChange={handleChange} error={errors.phone} type="tel" />
                             </div>
+                            <Field label="Street Address" name="street" placeholder="House no, building, street" value={address.street} onChange={handleChange} error={errors.street} />
+                            <div className="grid grid-cols-2 gap-3">
+                                <Field label="City" name="city" placeholder="City" value={address.city} onChange={handleChange} error={errors.city} />
+                                <Field label="State" name="state" placeholder="State" value={address.state} onChange={handleChange} error={errors.state} />
+                            </div>
+                            <Field label="Pincode" name="pincode" placeholder="6-digit pincode" value={address.pincode} onChange={handleChange} error={errors.pincode} type="number" />
+
                             <button
                                 onClick={saveAddress}
-                                className="mt-4 w-full bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold py-2.5 rounded-lg transition-colors text-sm"
+                                className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 rounded-xl mt-1 transition-colors text-sm"
                             >
                                 Save & Continue
                             </button>
@@ -277,173 +354,96 @@ const OrderPage = () => {
                     )}
                 </div>
 
-                {/* Step 2 - Delivery Option */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-7 h-7 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-sm font-bold shrink-0">2</div>
-                        <p className="font-bold text-gray-900 text-sm">Delivery Option</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${deliveryType === "express" ? "border-amber-400 bg-amber-50" : "border-gray-200 hover:border-gray-300"}`}>
-                            <input
-                                type="radio"
-                                name="delivery"
-                                value="express"
-                                checked={deliveryType === "express"}
-                                onChange={() => setDeliveryType("express")}
-                                className="mt-0.5 accent-amber-500"
-                            />
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <Zap size={15} className="text-amber-500" />
-                                    <span className="font-semibold text-gray-900 text-sm">Express Delivery</span>
-                                    <span className="text-xs bg-amber-400 text-gray-900 font-bold px-2 py-0.5 rounded-full">20 MIN</span>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Arrives by <span className="font-semibold text-gray-900">{formatTime(express20)}</span> today
-                                </p>
-                            </div>
-                            <span className="text-sm font-bold text-gray-900 shrink-0">₹29</span>
-                        </label>
-
-                        <label className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${deliveryType === "sameday" ? "border-amber-400 bg-amber-50" : "border-gray-200 hover:border-gray-300"}`}>
-                            <input
-                                type="radio"
-                                name="delivery"
-                                value="sameday"
-                                checked={deliveryType === "sameday"}
-                                onChange={() => setDeliveryType("sameday")}
-                                className="mt-0.5 accent-amber-500"
-                            />
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                    <Truck size={15} className="text-blue-500" />
-                                    <span className="font-semibold text-gray-900 text-sm">Same Day Delivery</span>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Arrives by <span className="font-semibold text-gray-900">11:59 PM · {formatDate(sameDay)}</span>
-                                </p>
-                            </div>
-                            <span className="text-sm font-bold shrink-0">
-                                {subtotal >= 499
-                                    ? <span className="text-green-600">FREE</span>
-                                    : <span className="text-gray-900">₹40</span>}
-                            </span>
-                        </label>
-                    </div>
-                </div>
-
-                {/* Step 3 - Payment */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-7 h-7 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-sm font-bold shrink-0">3</div>
-                        <p className="font-bold text-gray-900 text-sm">Payment Method</p>
-                    </div>
-
-                    <div className="p-3 rounded-xl border-2 border-amber-400 bg-amber-50">
-                        <div className="flex items-center gap-2 mb-3">
-                            <input type="radio" checked readOnly className="accent-amber-500" />
-                            <CreditCard size={15} className="text-amber-600" />
-                            <span className="font-semibold text-gray-900 text-sm">UPI Payment</span>
-                        </div>
-
-                        <input
-                            value={upiId}
-                            onChange={(e) => validateUpi(e.target.value)}
-                            placeholder="Enter UPI ID  (e.g. name@upi)"
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent bg-white"
-                        />
-                        {upiError && (
-                            <p className="text-xs text-red-500 mt-1">{upiError}</p>
-                        )}
-                        {upiId && !upiError && (
-                            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                                <CheckCircle2 size={12} /> UPI ID looks valid
-                            </p>
-                        )}
-                        <p className="text-xs text-gray-400 mt-2">Supported: GPay · PhonePe · Paytm · BHIM & all UPI apps</p>
-                    </div>
-                </div>
-
-                {/* Step 4 - Order Summary */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-7 h-7 rounded-full bg-amber-400 text-gray-900 flex items-center justify-center text-sm font-bold shrink-0">4</div>
-                        <p className="font-bold text-gray-900 text-sm">Order Summary ({items.length} {items.length === 1 ? "item" : "items"})</p>
+                {/* ── ORDER SUMMARY ── */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Package size={16} className="text-gray-400" />
+                        <h3 className="font-bold text-sm text-gray-900">Order Summary · {items.length} {items.length === 1 ? "item" : "items"}</h3>
                     </div>
 
                     <div className="space-y-3 mb-4">
                         {items.map((item, idx) => {
-                            const img = item.images?.[0] || item.product_images?.[0];
-                            const title = item.title || item.product_title;
+                            const name = item.title || item.product_title || "Product";
                             const price = item.price ?? item.product_price ?? 0;
                             const qty = item.quantity || 1;
-
                             return (
-                                <div key={item.product_id || idx} className="flex gap-3 items-center">
-                                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shrink-0">
-                                        {img && <img src={img} alt={title} className="w-full h-full object-contain p-1" />}
+                                <div key={idx} className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        {item.image || item.product_image ? (
+                                            <img src={item.image || item.product_image} alt={name} className="w-12 h-12 rounded-xl object-cover bg-gray-100 shrink-0 border" />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 border border-amber-100">
+                                                <Package size={18} className="text-amber-400" />
+                                            </div>
+                                        )}
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
+                                            <p className="text-xs text-gray-400">Qty: {qty}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-gray-900 line-clamp-2 font-medium leading-tight">{title}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">Qty: {qty}</p>
-                                    </div>
-                                    <p className="text-sm font-bold text-gray-900 shrink-0">
-                                        ₹{(price * qty).toLocaleString()}
-                                    </p>
+                                    <p className="text-sm font-bold text-gray-900 shrink-0">₹{price * qty}</p>
                                 </div>
                             );
                         })}
                     </div>
 
-                    <div className="border-t border-gray-100 pt-3 space-y-2">
+                    <div className="border-t border-gray-100 pt-3 space-y-2.5">
                         <div className="flex justify-between text-sm text-gray-600">
-                            <span>Subtotal ({items.reduce((s, i) => s + (i.quantity || 1), 0)} items)</span>
-                            <span>₹{subtotal.toLocaleString()}</span>
+                            <span>Subtotal</span>
+                            <span className="font-medium">₹{subtotal}</span>
                         </div>
                         <div className="flex justify-between text-sm text-gray-600">
-                            <span>Delivery ({deliveryType === "express" ? "Express 20 min" : "Same Day"})</span>
-                            <span className={deliveryFee === 0 ? "text-green-600 font-semibold" : ""}>
+                            <span>Delivery ({deliveryType === "express" ? "Express" : "Same Day"})</span>
+                            <span className={`font-medium ${deliveryFee === 0 ? "text-green-600" : ""}`}>
                                 {deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}
                             </span>
                         </div>
-                        <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-100 pt-2">
-                            <span>Total</span>
-                            <span className="text-red-700">₹{total.toLocaleString()}</span>
+                        <div className="flex justify-between font-bold text-base text-gray-900 pt-1 border-t border-gray-100">
+                            <span>Total Payable</span>
+                            <span>₹{total}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Place Order */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
-                        <ShieldCheck size={14} className="text-green-600 shrink-0" />
-                        <span>Safe &amp; secure payment. All orders are protected.</span>
-                    </div>
+                {/* ── TRUST BADGES ── */}
+                <div className="grid grid-cols-3 gap-3">
+                    {[
+                        { icon: ShieldCheck, label: "Secure Payment" },
+                        { icon: Truck, label: "Fast Delivery" },
+                        { icon: Package, label: "Easy Returns" },
+                    ].map(({ icon: Icon, label }) => (
+                        <div key={label} className="bg-white rounded-2xl border border-gray-200 p-3 flex flex-col items-center gap-1.5">
+                            <Icon size={18} className="text-amber-500" />
+                            <p className="text-[11px] font-semibold text-gray-500 text-center">{label}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-                    <button
-                        onClick={placeOrder}
-                        disabled={placing || !addressSaved || !upiId || !!upiError}
-                        className="w-full bg-amber-400 hover:bg-amber-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-gray-900 font-bold py-4 rounded-xl transition-colors text-base shadow-sm"
-                    >
-                        {placing ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <div className="w-5 h-5 border-2 border-gray-700 border-t-transparent rounded-full animate-spin" />
-                                Placing Order...
-                            </span>
-                        ) : (
-                            `Place Order · ₹${total.toLocaleString()}`
-                        )}
-                    </button>
-
-                    {(!addressSaved || !upiId) && (
-                        <p className="text-xs text-gray-400 text-center mt-2">
-                            {!addressSaved ? "Save your address to continue" : "Enter your UPI ID to continue"}
+            {/* ── STICKY PAY BUTTON ── */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 shadow-lg">
+                <div className="max-w-2xl mx-auto">
+                    {!addressSaved && (
+                        <p className="text-xs text-center text-gray-400 mb-2 flex items-center justify-center gap-1">
+                            <AlertCircle size={12} /> Save your delivery address to continue
                         </p>
                     )}
+                    <button
+                        onClick={placeOrder}
+                        disabled={placing}
+                        className={`w-full py-4 font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-all
+              ${!addressSaved
+                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                : "bg-amber-400 hover:bg-amber-500 text-gray-900 active:scale-[0.98]"
+                            }`}
+                    >
+                        {placing ? (
+                            <><Loader2 size={18} className="animate-spin" /> Processing...</>
+                        ) : (
+                            <><CreditCard size={18} /> Pay ₹{total}</>
+                        )}
+                    </button>
                 </div>
-
             </div>
         </div>
     );
