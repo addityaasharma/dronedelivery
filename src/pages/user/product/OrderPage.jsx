@@ -143,7 +143,11 @@ const OrderPage = () => {
 
     useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
 
-    if (!items.length) { navigate("/"); return null; }
+    useEffect(() => {
+        if (!items.length) {
+            navigate("/");
+        }
+    }, [items, navigate]);
 
     const subtotal = items.reduce((sum, i) => sum + (i.price ?? i.product_price ?? 0) * (i.quantity || 1), 0);
     const deliveryFee = deliveryType === "express" ? 29 : 0;

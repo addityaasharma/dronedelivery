@@ -8,7 +8,9 @@ const NAV_LINKS = [
     { label: "Home", path: "/" },
     { label: "Categories", path: "/category" },
     { label: "Cart", path: "/cart" },
-    { label: "Wishlist", path: "/liked-products" },
+    { label: "Orders", path: "/orders" },
+    { label: "Track Order", path: "/track-order" },
+    { label: "Support", path: "/support" },
     { label: "Profile", path: "/profile" },
 ];
 
@@ -236,7 +238,6 @@ const Header = () => {
                                 </div>
                             ) : (
                                 <>
-                                    {/* Dropdown header */}
                                     <div style={{
                                         display: "flex", alignItems: "center", justifyContent: "space-between",
                                         padding: "10px 16px", borderBottom: "1px solid #f3f4f6", background: "#fafafa",
@@ -252,7 +253,6 @@ const Header = () => {
                                         </button>
                                     </div>
 
-                                    {/* Suggestion list */}
                                     <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                                         {suggestions.map((product, idx) => (
                                             <li
@@ -271,7 +271,6 @@ const Header = () => {
                                                     transition: "background 0.15s",
                                                 }}
                                             >
-                                                {/* Thumbnail */}
                                                 <div style={{
                                                     width: 40, height: 40, borderRadius: 8,
                                                     overflow: "hidden", background: "#fef3c7",
@@ -290,7 +289,6 @@ const Header = () => {
                                                     )}
                                                 </div>
 
-                                                {/* Text */}
                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                     <p style={{ fontSize: 13, fontWeight: 500, color: "#111827", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                                         <HighlightedText text={product.title} query={searchQuery} />
@@ -300,7 +298,6 @@ const Header = () => {
                                                     </p>
                                                 </div>
 
-                                                {/* Arrow */}
                                                 <span style={{ color: "#d1d5db", fontSize: 16, flexShrink: 0 }}>›</span>
                                             </li>
                                         ))}
@@ -312,7 +309,7 @@ const Header = () => {
                 </div>
             </div>
 
-            {/* ── Desktop Nav (hidden on mobile) ── */}
+            {/* ── Desktop Nav ── */}
             <DesktopNav pathname={pathname} navigate={navigate} isActive={isActive} />
 
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -345,6 +342,7 @@ const DesktopNav = ({ navigate, isActive }) => (
                                 fontFamily: "'Georgia', serif",
                                 transition: "color 0.2s",
                                 letterSpacing: "0.01em",
+                                whiteSpace: "nowrap",
                             }}
                             onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#d97706"; }}
                             onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#57534e"; }}

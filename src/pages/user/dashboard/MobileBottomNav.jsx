@@ -1,17 +1,18 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FiHome, FiGrid, FiShoppingCart, FiHeart, FiUser } from "react-icons/fi";
+import { FiHome, FiGrid, FiShoppingCart, FiPackage, FiHeadphones, FiUser } from "react-icons/fi";
 
 const MobileBottomNav = () => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
     const tabs = [
-        { icon: <FiHome size={22} />, label: "Home", path: "/" },
-        { icon: <FiGrid size={22} />, label: "Categories", path: "/category" },
-        { icon: <FiShoppingCart size={22} />, label: "Cart", path: "/cart" },
-        { icon: <FiHeart size={22} />, label: "Wishlist", path: "/liked-products" },
-        { icon: <FiUser size={22} />, label: "Profile", path: "/profile" },
+        { icon: <FiHome size={20} />, label: "Home", path: "/" },
+        { icon: <FiGrid size={20} />, label: "Category", path: "/category" },
+        { icon: <FiShoppingCart size={20} />, label: "Cart", path: "/cart" },
+        { icon: <FiPackage size={20} />, label: "Orders", path: "/track-order" },
+        { icon: <FiHeadphones size={20} />, label: "Support", path: "/support" },
+        { icon: <FiUser size={20} />, label: "Profile", path: "/profile" },
     ];
 
     return (
@@ -48,7 +49,7 @@ const MobileBottomNav = () => {
                         </span>
                         <span
                             style={{
-                                fontSize: "10px",
+                                fontSize: "9px",
                                 fontWeight: "600",
                                 color: active ? "#d97706" : "#b8a090",
                                 fontFamily: "'Georgia', serif",
@@ -61,7 +62,7 @@ const MobileBottomNav = () => {
                                 style={{
                                     position: "absolute",
                                     bottom: 0,
-                                    width: "32px",
+                                    width: "28px",
                                     height: "2.5px",
                                     background: "#d97706",
                                     borderRadius: "9999px",
