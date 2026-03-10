@@ -14,11 +14,28 @@ import MainLayout from "./layers/MainLayout";
 import OrderPage from "./pages/user/product/OrderPage";
 import SearchResults from "./pages/user/product/SearchResults";
 import CategoryPage from "./pages/user/dashboard/CategoryPage";
+import AdminLayout from "./layers/AdminLayout";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminCollections from "./pages/admin/AdminCollections";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDrones from "./pages/admin/AdminDrones";
+import AdminSupport from "./pages/admin/AdminSupport";
+import UserSupport from "./pages/user/dashboard/UserSupport";
 
 const App = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="category" element={<AdminCategories />} />
+        <Route path="collection" element={<AdminCollections />} />
+        <Route path="drones" element={<AdminDrones />} />
+        <Route path="support" element={<AdminSupport />} />
+      </Route>
 
       <Route element={<MainLayout />}>
         <Route path="/" element={<Dashboard />} />
@@ -33,6 +50,7 @@ const App = () => {
         <Route path="/checkout/:product_id" element={<CheckoutPage />} />
         <Route path="/collection/:id" element={<CollectionPage />} />
         <Route path="/order" element={<OrderPage />} />
+        <Route path="/support" element={<UserSupport />} />
       </Route>
     </Routes>
   );
