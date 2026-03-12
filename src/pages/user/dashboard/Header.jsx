@@ -8,7 +8,6 @@ const NAV_LINKS = [
     { label: "Home", path: "/" },
     { label: "Categories", path: "/category" },
     { label: "Cart", path: "/cart" },
-    { label: "Orders", path: "/orders" },
     { label: "Track Order", path: "/track-order" },
     { label: "Support", path: "/support" },
     { label: "Profile", path: "/profile" },
